@@ -1,0 +1,7 @@
+/PacMan/nbproject/private/
+/PacMan/build/
+/PacMan/dist/
+*build-impl.xml
+*project.xml
+*jfx-impl.xml
+*.properties
