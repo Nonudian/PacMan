@@ -1,14 +1,16 @@
 package ViewController;
 
+import Model.Direction;
 import Model.Entity;
 import Model.Game;
 import Model.Ghost;
+import Model.GhostDoor;
 import Model.GumType;
 import static Model.GumType.*;
 import Model.Tile;
 import Model.Lane;
 import Model.PacMan;
-import java.util.Random;
+import Model.Portal;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -30,12 +32,16 @@ public class GameView extends Application {
     private Observer observer;
     private TilePane gridTiles;
     private Stage stage;
+    private boolean canInput;
 
     private void initObservable() {
         this.observer = (Observable o, Object arg) -> {
             // l'observer observe l'obervable (update est exécuté dès notifyObservers() est appelé côté modèle)
-            this.drawGame();
-            Platform.runLater(() -> this.display());
+            Platform.runLater(() -> {
+                this.drawGame();
+                this.display();
+                this.canInput = true;
+            });
         };
         this.game.addObserver(this.observer);
         this.game.start();
@@ -52,7 +58,13 @@ public class GameView extends Application {
                 Rectangle rect = new Rectangle(30, 30);
                 pane.getChildren().add(rect);
                 if (tile instanceof Lane) {
-                    rect.setFill(Color.BLACK);
+                    if(tile instanceof Portal) {
+                        rect.setFill(Color.WHITE);
+                    } else if (tile instanceof GhostDoor) {
+                        rect.setFill(Color.GREY);
+                    } else {
+                        rect.setFill(Color.BLACK);
+                    }
                     Lane lane = ((Lane) tile);
                     GumType type = lane.getType();
                     if (type != EMPTY) {
@@ -70,13 +82,12 @@ public class GameView extends Application {
                         if (entity instanceof PacMan) {
                             Arc pacman = new Arc(0, 0, 10, 10, 45, 270);
                             pacman.setType(ArcType.ROUND);
-                            pacman.setFill(Color.YELLOW);
+                            pacman.setFill(entity.getColor());
                             pane.getChildren().add(pacman);
                             pacman.requestFocus();
                         } else if (entity instanceof Ghost) {
-                            Random rand = new Random();
                             Rectangle ghost = new Rectangle(15, 15);
-                            ghost.setFill(new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 1));
+                            ghost.setFill(entity.getColor());
                             pane.getChildren().add(ghost);
                             ghost.requestFocus();
                         }
@@ -86,18 +97,31 @@ public class GameView extends Application {
                 }
                 this.gridTiles.getChildren().add(pane);
             }
-
         }
     }
 
     private void display() {
-        this.stage.setScene(new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30));
+        Scene scene = new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30);
 
         this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
             this.game.stop();
             this.stage.close();
         });
 
+        scene.setOnKeyReleased((event) -> {
+            if (this.canInput) {
+                switch (event.getCode()) {
+                    case UP:
+                    case DOWN:
+                    case LEFT:
+                    case RIGHT:
+                        this.game.move(this.game.getPacMan(), Direction.get(event.getCode()));
+                        this.canInput = false;
+                }
+            }
+        });
+
+        this.stage.setScene(scene);
         this.stage.setResizable(false);
         this.stage.sizeToScene();
         this.stage.centerOnScreen();
@@ -110,8 +134,9 @@ public class GameView extends Application {
         this.game = new Game();
         this.stage = primaryStage;
         this.drawGame();
-        this.initObservable();
         this.display();
+        this.canInput = true;
+        this.initObservable();
     }
 
     public static void main(String[] args) {

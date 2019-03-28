@@ -1,7 +1,6 @@
 package Model;
 
-import com.sun.javafx.scene.traversal.Direction;
-import static com.sun.javafx.scene.traversal.Direction.*;
+import static Model.Direction.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -12,17 +11,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
+import static javafx.scene.paint.Color.*;
 
 public class Game extends Observable implements Runnable {
 
     private final int dimension;
     private Tile[][] grid;
-    private ArrayList<Entity> entities;
+    private ArrayList<Ghost> ghosts;
     private final AtomicBoolean running;
     private int score;
     private Thread worker;
     private final int interval;
     private ArrayList<Portal> portals;
+    private PacMan pacman;
 
     public Game() {
         this.dimension = 21;
@@ -52,10 +54,8 @@ public class Game extends Observable implements Runnable {
                 Thread.currentThread().interrupt();
                 System.out.println("Thread was interrupted, Failed to complete operation");
             }
-            this.entities.forEach((entity) -> {
-                if(entity instanceof Ghost) {
-                    this.move(entity, Direction.values()[new Random().nextInt(3)]);
-                }
+            this.ghosts.forEach((ghost) -> {
+                this.move(ghost, Direction.values()[new Random().nextInt(3)]);
             });
             setChanged();
             notifyObservers();
@@ -64,8 +64,11 @@ public class Game extends Observable implements Runnable {
 
     private void initGrid() {
         this.portals = new ArrayList();
-        this.entities = new ArrayList();
+        this.ghosts = new ArrayList();
         this.grid = new Tile[this.dimension][this.dimension];
+        
+        Color[] ghostColors = new Color[]{RED, PINK, CYAN, ORANGE};
+        int ghostAdded = 0;
 
         File file = new File("./src/Assets/gridFile.txt");
         Scanner reader;
@@ -81,14 +84,18 @@ public class Game extends Observable implements Runnable {
                             this.grid[x][y] = new Wall(coords);
                             break;
                         case 'P':
-                            PacMan pacman = new PacMan(coords, RIGHT);
-                            this.entities.add(pacman);
-                            this.grid[x][y] = new Lane(coords, this, pacman);
+                            this.pacman = new PacMan(coords, RIGHT, Color.YELLOW);
+                            this.grid[x][y] = new Lane(coords, this, this.pacman);
+                            break;
+                        case 'D':
+                            this.grid[x][y] = new GhostDoor(coords, this);
                             break;
                         case 'G':
-                            Ghost ghost = new Ghost(coords, UP);
-                            this.entities.add(ghost);
+                            Color color = ghostColors[ghostAdded];
+                            Ghost ghost = new Ghost(coords, UP, color);
+                            this.ghosts.add(ghost);
                             this.grid[x][y] = new Lane(coords, this, ghost);
+                            ghostAdded++;
                             break;
                         case 'T':
                             Portal portal = new Portal(coords, this);
@@ -109,11 +116,11 @@ public class Game extends Observable implements Runnable {
             Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void linkPortals() {
-        for(int i = 0; i < this.portals.size(); i+=2) {
-            this.portals.get(i).setTarget(this.portals.get(i+1));
-            this.portals.get(i+1).setTarget(this.portals.get(i));
+        for (int i = 0; i < this.portals.size(); i += 2) {
+            this.portals.get(i).setTarget(this.portals.get(i + 1));
+            this.portals.get(i + 1).setTarget(this.portals.get(i));
         }
     }
 
@@ -125,15 +132,20 @@ public class Game extends Observable implements Runnable {
         return this.grid;
     }
 
-    public ArrayList<Entity> getEntities() {
-        return this.entities;
+    public ArrayList<Ghost> getGhosts() {
+        return this.ghosts;
+    }
+
+    public PacMan getPacMan() {
+        return this.pacman;
     }
 
     public void kill(Entity entity) {
         if (entity instanceof PacMan) {
             this.stop();
+        } else {
+            entity.moveToStart();
         }
-        this.entities.remove(entity);
     }
 
     public boolean isFinished() {
@@ -176,10 +188,16 @@ public class Game extends Observable implements Runnable {
 
     public boolean move(Entity entity, Direction direction) {
         Point2D entityCoords = entity.getCoords();
+        Lane oldLane = ((Lane) this.getTileByCoords(entityCoords));
         Point2D nextCoords = this.getNextCoords(entityCoords, direction);
 
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
+            
+            if (entity instanceof PacMan && newTile instanceof GhostDoor) {
+                return false;
+            }
+            
             if (newTile instanceof Lane) {
                 Lane newLane = ((Lane) newTile);
                 Entity enemy = newLane.getEntity();
@@ -188,21 +206,22 @@ public class Game extends Observable implements Runnable {
                     if (entity.canKill(enemy)) {
                         this.kill(enemy);
                     } else if (enemy.canKill(entity)) {
+                        oldLane.removeEntity();
                         this.kill(entity);
                         return false;
                     } else {
                         return false;
                     }
                 }
-                
-                if(newLane instanceof Portal) {
-                    newLane = ((Portal)newLane).getTarget();
+
+                if (newLane instanceof Portal) {
+                    newLane = ((Portal) newLane).getTarget();
                 }
                 
-                ((Lane) this.getTileByCoords(entityCoords)).removeEntity();
-                System.out.println("entity:"+entity+"old: ("+entityCoords.getX()+", "+entityCoords.getY()+") "+"new: ("+nextCoords.getX()+", "+nextCoords.getY()+")");
+                oldLane.removeEntity();
                 entity.moveTo(newLane.getCoords());
                 newLane.setEntity(entity);
+                
                 return true;
             }
         }

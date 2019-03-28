@@ -89,14 +89,9 @@ public class SimpleVC extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         
-        root.setOnKeyPressed(new EventHandler<javafx.scene.input.KeyEvent>() { // on écoute le clavier
-            
-
-            @Override
-            public void handle(javafx.scene.input.KeyEvent event) {
-                if (event.isShiftDown()) {
-                    spm.initXY(); // si on clique sur shift, on remet spm en haut à gauche
-                }
+        root.setOnKeyPressed((javafx.scene.input.KeyEvent event) -> {
+            if (event.isShiftDown()) {
+                spm.initXY(); // si on clique sur shift, on remet spm en haut à gauche
             }
         });
         

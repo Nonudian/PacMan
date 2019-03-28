@@ -1,34 +1,45 @@
 package Model;
 
-import com.sun.javafx.scene.traversal.Direction;
 import javafx.geometry.Point2D;
+import javafx.scene.paint.Color;
 
-public abstract class Entity implements Runnable {
+public abstract class Entity {
     
     protected Direction currentDirection;
     protected Point2D coords;
+    protected final Point2D start;
+    protected final Color color;
     
-    public Entity(Point2D coords, Direction direction) {
+    public Entity(Point2D coords, Direction direction, Color color) {
         this.currentDirection = direction;
+        this.start = coords;
         this.coords = coords;
+        this.color = color;
     }
     
     public Direction getDirection() {
         return this.currentDirection;
     }
     
+    public Color getColor() {
+        return this.color;
+    }
+    
     public Point2D getCoords() {
         return this.coords;
+    }
+    
+    public Point2D getStart() {
+        return this.start;
     }
     
     public void moveTo(Point2D coords) {
         this.coords = coords;
     }
     
-    protected abstract boolean canKill(Entity enemy);
-    
-    @Override
-    public void run() {
-        
+    public void moveToStart() {
+        this.coords = this.start;
     }
+    
+    protected abstract boolean canKill(Entity enemy);
 }

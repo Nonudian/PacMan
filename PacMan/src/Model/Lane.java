@@ -8,6 +8,13 @@ public class Lane extends Tile {
     private final Game game;
     private GumType gum;
     private Entity entity;
+    
+    public Lane(Point2D coords, Game game) {
+        super(coords);
+        this.game = game;
+        this.gum = EMPTY;
+        this.entity = null;
+    }
 
     public Lane(Point2D coords, Game game, GumType gum) {
         super(coords);
