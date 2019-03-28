@@ -5,7 +5,6 @@
  */
 package old;
 
-import old.SimplePacMan;
 import java.util.Observable;
 import java.util.Observer;
 import javafx.scene.image.Image;

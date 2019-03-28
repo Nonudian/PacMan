@@ -20,11 +20,26 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import java.util.Observable;
+import java.util.Observer;
+import javafx.application.Platform;
 
 public class GameView extends Application {
 
     private Game game;
+    private Observer observer;
     private TilePane gridTiles;
+    private Stage stage;
+
+    private void initObservable() {
+        this.observer = (Observable o, Object arg) -> {
+            // l'observer observe l'obervable (update est exécuté dès notifyObservers() est appelé côté modèle)
+            this.drawGame();
+            Platform.runLater(() -> this.display());
+        };
+        this.game.addObserver(this.observer);
+        this.game.start();
+    }
 
     private void drawGame() {
         Tile[][] grid = this.game.getTiles();
@@ -35,6 +50,7 @@ public class GameView extends Application {
                 Tile tile = grid[x][y];
                 StackPane pane = new StackPane();
                 Rectangle rect = new Rectangle(30, 30);
+                pane.getChildren().add(rect);
                 if (tile instanceof Lane) {
                     rect.setFill(Color.BLACK);
                     Lane lane = ((Lane) tile);
@@ -44,29 +60,29 @@ public class GameView extends Application {
                         if (type == SUPER) {
                             gum.setRadius(10);
                         }
-                        pane.getChildren().addAll(rect, gum);
-                    } else {
-                        // at start, entities spawn on EMPTY Lanes
-                        Entity entity = lane.getEntity();
-                        if (entity != null) {
-                            if (entity instanceof PacMan) {
-                                Arc pacman = new Arc(0, 0, 10, 10, 45, 270);
-                                pacman.setType(ArcType.ROUND);
-                                pacman.setFill(Color.YELLOW);
-                                pane.getChildren().addAll(rect, pacman);
-                            } else if (entity instanceof Ghost) {
-                                Random rand = new Random();
-                                Rectangle ghost = new Rectangle(15, 15);
-                                ghost.setFill(new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 1));
-                                pane.getChildren().addAll(rect, ghost);
-                            }
-                        } else {
-                            pane.getChildren().add(rect);
+                        pane.getChildren().add(gum);
+                        gum.requestFocus();
+                    }
+
+                    // at start, entities spawn on EMPTY Lanes
+                    Entity entity = lane.getEntity();
+                    if (entity != null) {
+                        if (entity instanceof PacMan) {
+                            Arc pacman = new Arc(0, 0, 10, 10, 45, 270);
+                            pacman.setType(ArcType.ROUND);
+                            pacman.setFill(Color.YELLOW);
+                            pane.getChildren().add(pacman);
+                            pacman.requestFocus();
+                        } else if (entity instanceof Ghost) {
+                            Random rand = new Random();
+                            Rectangle ghost = new Rectangle(15, 15);
+                            ghost.setFill(new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 1));
+                            pane.getChildren().add(ghost);
+                            ghost.requestFocus();
                         }
                     }
                 } else {
                     rect.setFill(Color.BLUE);
-                    pane.getChildren().add(rect);
                 }
                 this.gridTiles.getChildren().add(pane);
             }
@@ -74,25 +90,28 @@ public class GameView extends Application {
         }
     }
 
-    private void display(Stage primaryStage) {
-        primaryStage.setScene(new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30));
+    private void display() {
+        this.stage.setScene(new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30));
 
-        primaryStage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
-            primaryStage.close();
+        this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
+            this.game.stop();
+            this.stage.close();
         });
 
-        primaryStage.setResizable(false);
-        primaryStage.sizeToScene();
-        primaryStage.centerOnScreen();
-        primaryStage.setTitle("Pac Man");
-        primaryStage.show();
+        this.stage.setResizable(false);
+        this.stage.sizeToScene();
+        this.stage.centerOnScreen();
+        this.stage.setTitle("Pac Man");
+        this.stage.show();
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.game = new Game();
+        this.stage = primaryStage;
         this.drawGame();
-        this.display(primaryStage);
+        this.initObservable();
+        this.display();
     }
 
     public static void main(String[] args) {

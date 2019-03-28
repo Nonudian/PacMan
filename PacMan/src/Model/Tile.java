@@ -9,4 +9,9 @@ public class Tile {
     public Tile(Point2D coords) {
         this.coords = coords;
     }
+    
+    public Point2D getCoords() {
+        return this.coords;
+    }
+    
 }

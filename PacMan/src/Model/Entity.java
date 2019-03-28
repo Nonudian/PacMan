@@ -21,13 +21,11 @@ public abstract class Entity implements Runnable {
         return this.coords;
     }
     
-    protected void moveTo(Point2D coords) {
+    public void moveTo(Point2D coords) {
         this.coords = coords;
     }
     
     protected abstract boolean canKill(Entity enemy);
-    
-    protected abstract boolean canDie(Entity enemy);
     
     @Override
     public void run() {
