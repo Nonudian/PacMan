@@ -44,21 +44,26 @@ public class Game extends Observable implements Runnable {
         this.running.set(false);
     }
 
+    public void interrupt() {
+        this.stop();
+        this.worker.interrupt();
+    }
+
     @Override
     public void run() {
         this.running.set(true);
         while (this.running.get()) {
             try {
-                Thread.sleep(this.interval);
+                this.worker.sleep(this.interval);
+                this.ghosts.forEach((ghost) -> {
+                    this.move(ghost, Direction.values()[new Random().nextInt(3)]);
+                });
+                setChanged();
+                notifyObservers();
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                this.interrupt();
                 System.out.println("Thread was interrupted, Failed to complete operation");
             }
-            this.ghosts.forEach((ghost) -> {
-                this.move(ghost, Direction.values()[new Random().nextInt(3)]);
-            });
-            setChanged();
-            notifyObservers();
         }
     }
 
@@ -66,7 +71,7 @@ public class Game extends Observable implements Runnable {
         this.portals = new ArrayList();
         this.ghosts = new ArrayList();
         this.grid = new Tile[this.dimension][this.dimension];
-        
+
         Color[] ghostColors = new Color[]{RED, PINK, CYAN, ORANGE};
         int ghostAdded = 0;
 
@@ -193,11 +198,11 @@ public class Game extends Observable implements Runnable {
 
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
-            
+
             if (entity instanceof PacMan && newTile instanceof GhostDoor) {
                 return false;
             }
-            
+
             if (newTile instanceof Lane) {
                 Lane newLane = ((Lane) newTile);
                 Entity enemy = newLane.getEntity();
@@ -217,11 +222,11 @@ public class Game extends Observable implements Runnable {
                 if (newLane instanceof Portal) {
                     newLane = ((Portal) newLane).getTarget();
                 }
-                
+
                 oldLane.removeEntity();
                 entity.moveTo(newLane.getCoords());
                 newLane.setEntity(entity);
-                
+
                 return true;
             }
         }

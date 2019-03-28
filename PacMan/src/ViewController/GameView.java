@@ -104,7 +104,7 @@ public class GameView extends Application {
         Scene scene = new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30);
 
         this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
-            this.game.stop();
+            this.game.interrupt();
             this.stage.close();
         });
 
