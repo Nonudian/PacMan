@@ -15,66 +15,59 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Observable;
-import java.util.Random;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import static javafx.scene.paint.Color.*;
 
-public class Game extends Observable implements Runnable {
+public class Game extends Observable {
 
     private final int dimension;
     private Tile[][] grid;
     private ArrayList<Ghost> ghosts;
-    private final AtomicBoolean running;
+    private boolean running;
     private int score;
-    private Thread worker;
-    private final int interval;
     private ArrayList<Portal> portals;
     private PacMan pacman;
 
     public Game() {
         this.dimension = 21;
         this.score = 0;
-        this.interval = 500;
-        this.running = new AtomicBoolean(false);
+        this.running = false;
         this.initGrid();
         this.linkPortals();
     }
+    
+    public void resetGum() {
+        for(int j = 0; j < this.dimension; j++) {
+            for(int i = 0; i < this.dimension; i++) {
+                Tile tile = this.grid[i][j];
+                if(tile instanceof Lane) {
+                    ((Lane) tile).resetGum();
+                }
+            }
+        }
+    }
 
     public void start() {
-        this.worker = new Thread(this);
-        this.worker.start();
+        this.running = true;
+        this.ghosts.forEach((ghost) -> {
+            ghost.start();
+        });
     }
 
     public void stop() {
-        this.running.set(false);
+        this.ghosts.forEach((ghost) -> {
+            ghost.stop();
+        });
+        this.running = false;
     }
 
-    public void interrupt() {
-        this.stop();
-        this.worker.interrupt();
-    }
-
-    @Override
-    public void run() {
-        this.running.set(true);
-        while (this.running.get()) {
-            try {
-                this.worker.sleep(this.interval);
-                this.ghosts.forEach((ghost) -> {
-                    this.move(ghost, Direction.values()[new Random().nextInt(3)]);
-                });
-                setChanged();
-                notifyObservers();
-            } catch (InterruptedException e) {
-                this.interrupt();
-                System.out.println("Thread was interrupted, Failed to complete operation");
-            }
-        }
+    public void update() {
+        this.setChanged();
+        this.notifyObservers();
     }
 
     private void initGrid() {
@@ -107,7 +100,7 @@ public class Game extends Observable implements Runnable {
                             break;
                         case 'G':
                             Color color = ghostColors[ghostAdded];
-                            Ghost ghost = new Ghost(coords, UP, color);
+                            Ghost ghost = new Ghost(coords, UP, color, this, 200 + 100 * ghostAdded);
                             this.ghosts.add(ghost);
                             this.grid[x][y] = new Lane(coords, this, ghost);
                             ghostAdded++;
@@ -155,16 +148,8 @@ public class Game extends Observable implements Runnable {
         return this.pacman;
     }
 
-    public void kill(Entity entity) {
-        if (entity instanceof PacMan) {
-            this.stop();
-        } else {
-            entity.moveToStart();
-        }
-    }
-
     public boolean isFinished() {
-        return this.running.get();
+        return !this.running;
     }
 
     public Point2D getNextCoords(Point2D coords, Direction direction) {
@@ -201,9 +186,23 @@ public class Game extends Observable implements Runnable {
         return this.score;
     }
 
-    public boolean move(Entity entity, Direction direction) {
+    private void applyMove(Entity entity, Point2D newCoords) {
+        ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
+        entity.moveTo(newCoords);
+    }
+    
+    private void kill(Entity entity) {
+        if(entity instanceof PacMan) {
+            this.score = 0;
+            this.resetGum();
+        }
+        ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
+        entity.moveToStart();
+        ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
+    }
+
+    public synchronized boolean move(Entity entity, Direction direction) {
         Point2D entityCoords = entity.getCoords();
-        Lane oldLane = ((Lane) this.getTileByCoords(entityCoords));
         Point2D nextCoords = this.getNextCoords(entityCoords, direction);
 
         if (this.isReachable(nextCoords)) {
@@ -217,26 +216,27 @@ public class Game extends Observable implements Runnable {
                 Lane newLane = ((Lane) newTile);
                 Entity enemy = newLane.getEntity();
 
+                if (newLane instanceof Portal) {
+                    newLane = ((Portal) newLane).getTarget();
+                    nextCoords = newLane.getCoords();
+                }
+
                 if (enemy != null) {
                     if (entity.canKill(enemy)) {
                         this.kill(enemy);
                     } else if (enemy.canKill(entity)) {
-                        oldLane.removeEntity();
                         this.kill(entity);
+                        this.update();
                         return false;
                     } else {
                         return false;
                     }
                 }
-
-                if (newLane instanceof Portal) {
-                    newLane = ((Portal) newLane).getTarget();
-                }
-
-                oldLane.removeEntity();
-                entity.moveTo(newLane.getCoords());
+                
+                this.applyMove(entity, nextCoords);
                 newLane.setEntity(entity);
-
+                this.update();
+                
                 return true;
             }
         }

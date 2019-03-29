@@ -9,12 +9,14 @@ public class Lane extends Tile {
 
     private final Game game;
     private GumType gum;
+    private final GumType startGum;
     private Entity entity;
     
     public Lane(Point2D coords, Game game) {
         super(coords);
         this.game = game;
         this.gum = EMPTY;
+        this.startGum = EMPTY;
         this.entity = null;
     }
 
@@ -22,6 +24,7 @@ public class Lane extends Tile {
         super(coords);
         this.game = game;
         this.gum = gum;
+        this.startGum = gum;
         this.entity = null;
     }
 
@@ -29,14 +32,19 @@ public class Lane extends Tile {
         super(coords);
         this.game = game;
         this.gum = EMPTY;
+        this.startGum = EMPTY;
         this.entity = entity;
+    }
+    
+    public GumType getType() {
+        return this.startGum;
     }
 
     public boolean isGummed() {
         return this.gum != EMPTY;
     }
 
-    public GumType getType() {
+    public GumType getState() {
         return this.gum;
     }
 
@@ -60,6 +68,10 @@ public class Lane extends Tile {
 
     public void removeEntity() {
         this.entity = null;
+    }
+    
+    public void resetGum() {
+        this.gum = this.startGum;
     }
 
     public void setEntity(Entity newEntity) {

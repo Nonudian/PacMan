@@ -66,7 +66,7 @@ public class GameView extends Application {
                         rect.setFill(Color.BLACK);
                     }
                     Lane lane = ((Lane) tile);
-                    GumType type = lane.getType();
+                    GumType type = lane.getState();
                     if (type != EMPTY) {
                         Circle gum = new Circle(15, 15, 5, Color.WHITE);
                         if (type == SUPER) {
@@ -104,7 +104,7 @@ public class GameView extends Application {
         Scene scene = new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30);
 
         this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
-            this.game.interrupt();
+            this.game.stop();
             this.stage.close();
         });
 
