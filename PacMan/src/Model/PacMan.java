@@ -1,5 +1,6 @@
 package Model;
 
+import Util.Direction;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
@@ -25,7 +26,7 @@ public class PacMan extends Entity {
     }
 
     @Override
-    protected boolean canKill(Entity enemy) {
+    public boolean canKill(Entity enemy) {
         return (enemy instanceof Ghost && this.powered);
     }
 }

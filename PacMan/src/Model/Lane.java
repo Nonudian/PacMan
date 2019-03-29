@@ -1,6 +1,8 @@
 package Model;
 
-import static Model.GumType.*;
+import Controller.Game;
+import Util.GumType;
+import static Util.GumType.*;
 import javafx.geometry.Point2D;
 
 public class Lane extends Tile {

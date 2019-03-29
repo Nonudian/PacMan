@@ -1,5 +1,6 @@
 package Model;
 
+import Util.Direction;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
@@ -41,5 +42,5 @@ public abstract class Entity {
         this.coords = this.start;
     }
     
-    protected abstract boolean canKill(Entity enemy);
+    public abstract boolean canKill(Entity enemy);
 }

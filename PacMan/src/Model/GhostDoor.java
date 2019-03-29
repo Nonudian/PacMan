@@ -5,6 +5,7 @@
  */
 package Model;
 
+import Controller.Game;
 import javafx.geometry.Point2D;
 
 /**

@@ -1,6 +1,16 @@
-package Model;
+package Controller;
 
-import static Model.Direction.*;
+import Model.Entity;
+import Model.Ghost;
+import Model.GhostDoor;
+import Model.Lane;
+import Model.PacMan;
+import Model.Portal;
+import Model.Tile;
+import Model.Wall;
+import Util.GumType;
+import Util.Direction;
+import static Util.Direction.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

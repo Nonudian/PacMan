@@ -1,12 +1,12 @@
-package ViewController;
+package View;
 
-import Model.Direction;
+import Util.Direction;
 import Model.Entity;
-import Model.Game;
+import Controller.Game;
 import Model.Ghost;
 import Model.GhostDoor;
-import Model.GumType;
-import static Model.GumType.*;
+import Util.GumType;
+import static Util.GumType.*;
 import Model.Tile;
 import Model.Lane;
 import Model.PacMan;

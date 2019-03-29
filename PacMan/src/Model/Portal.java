@@ -5,7 +5,8 @@
  */
 package Model;
 
-import static Model.GumType.EMPTY;
+import Controller.Game;
+import static Util.GumType.EMPTY;
 import javafx.geometry.Point2D;
 
 /**
