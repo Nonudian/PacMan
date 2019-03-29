@@ -50,6 +50,12 @@ public class Game extends Observable {
             }
         }
     }
+    
+    public void resetGhosts() {
+        this.ghosts.forEach((ghost) -> {
+            this.kill(ghost);
+        });
+    }
 
     public void start() {
         this.running = true;
@@ -192,13 +198,14 @@ public class Game extends Observable {
     }
     
     private void kill(Entity entity) {
-        if(entity instanceof PacMan) {
-            this.score = 0;
-            this.resetGum();
-        }
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
         entity.moveToStart();
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
+        if(entity instanceof PacMan) {
+            this.score = 0;
+            this.resetGum();
+            this.resetGhosts();
+        }
     }
 
     public synchronized boolean move(Entity entity, Direction direction) {

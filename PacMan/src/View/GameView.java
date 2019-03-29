@@ -115,8 +115,8 @@ public class GameView extends Application {
                     case DOWN:
                     case LEFT:
                     case RIGHT:
-                        this.game.move(this.game.getPacMan(), Direction.get(event.getCode()));
                         this.canInput = false;
+                        this.game.move(this.game.getPacMan(), Direction.get(event.getCode()));
                 }
             }
         });
