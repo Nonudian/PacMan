@@ -214,9 +214,12 @@ public class Game extends Observable {
 
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
-
-            if (entity instanceof PacMan && newTile instanceof GhostDoor) {
-                return false;
+            
+            if (entity instanceof PacMan) {
+                entity.setDirection(direction);
+                if (newTile instanceof GhostDoor) {
+                    return false;
+                }
             }
 
             if (newTile instanceof Lane) {

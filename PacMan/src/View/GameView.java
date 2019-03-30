@@ -58,7 +58,7 @@ public class GameView extends Application {
                 Rectangle rect = new Rectangle(30, 30);
                 pane.getChildren().add(rect);
                 if (tile instanceof Lane) {
-                    if(tile instanceof Portal) {
+                    if (tile instanceof Portal) {
                         rect.setFill(Color.WHITE);
                     } else if (tile instanceof GhostDoor) {
                         rect.setFill(Color.GREY);
@@ -80,7 +80,24 @@ public class GameView extends Application {
                     Entity entity = lane.getEntity();
                     if (entity != null) {
                         if (entity instanceof PacMan) {
-                            Arc pacman = new Arc(0, 0, 10, 10, 45, 270);
+                            int startingAngle;
+                            switch (entity.getDirection()) {
+                                case LEFT:
+                                    startingAngle = 225;
+                                    break;
+                                case UP:
+                                    startingAngle = 135;
+                                    break;
+                                case RIGHT:
+                                    startingAngle = 45;
+                                    break;
+                                case DOWN:
+                                    startingAngle = 315;
+                                    break;
+                                default:
+                                    startingAngle = 45;
+                            }
+                            Arc pacman = new Arc(0, 0, 10, 10, startingAngle, 270);
                             pacman.setType(ArcType.ROUND);
                             pacman.setFill(entity.getColor());
                             pane.getChildren().add(pacman);

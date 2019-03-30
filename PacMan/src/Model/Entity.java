@@ -22,6 +22,10 @@ public abstract class Entity {
         return this.currentDirection;
     }
     
+    public void setDirection(Direction direction) {
+        this.currentDirection = direction;
+    }
+    
     public Color getColor() {
         return this.color;
     }
