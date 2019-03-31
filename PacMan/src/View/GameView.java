@@ -32,7 +32,6 @@ public class GameView extends Application {
     private Observer observer;
     private TilePane gridTiles;
     private Stage stage;
-    private boolean canInput;
 
     private void initObservable() {
         this.observer = (Observable o, Object arg) -> {
@@ -40,7 +39,6 @@ public class GameView extends Application {
             Platform.runLater(() -> {
                 this.drawGame();
                 this.display();
-                this.canInput = true;
             });
         };
         this.game.addObserver(this.observer);
@@ -126,15 +124,12 @@ public class GameView extends Application {
         });
 
         scene.setOnKeyReleased((event) -> {
-            if (this.canInput) {
-                switch (event.getCode()) {
-                    case UP:
-                    case DOWN:
-                    case LEFT:
-                    case RIGHT:
-                        this.canInput = false;
-                        this.game.move(this.game.getPacMan(), Direction.get(event.getCode()));
-                }
+            switch (event.getCode()) {
+                case UP:
+                case DOWN:
+                case LEFT:
+                case RIGHT:
+                    this.game.updatePacManDirection(Direction.get(event.getCode()));
             }
         });
 
@@ -152,7 +147,6 @@ public class GameView extends Application {
         this.stage = primaryStage;
         this.drawGame();
         this.display();
-        this.canInput = true;
         this.initObservable();
     }
 

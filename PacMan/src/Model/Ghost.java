@@ -3,36 +3,13 @@ package Model;
 import Controller.Game;
 import Util.Direction;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
-public class Ghost extends Entity implements Runnable {
-
-    private final AtomicBoolean movable;
-    private final Thread worker;
-    private final int interval;
-    private final Game game;
+public class Ghost extends Entity {
 
     public Ghost(Point2D coords, Direction direction, Color color, Game game, int interval) {
-        super(coords, direction, color);
-        this.movable = new AtomicBoolean(false);
-        this.worker = new Thread(this);
-        this.interval = interval;
-        this.game = game;
-    }
-
-    public void start() {
-        this.movable.set(true);
-        this.worker.start();
-    }
-
-    public void stop() {
-        this.movable.set(false);
-    }
-
-    public boolean canMove() {
-        return this.movable.get();
+        super(coords, direction, color, game, interval);
     }
 
     private ArrayList<Direction> getPossibleDirections() {
@@ -49,8 +26,10 @@ public class Ghost extends Entity implements Runnable {
         }
         return possibleDirections;
     }
-
-    private void setDirectionAccordingToPacMan() {
+    
+    @Override
+    protected Direction getNextDirection() {
+        Direction nextDirection = this.currentDirection;
         PacMan pacman = this.game.getPacMan();
         Point2D pacmanCoords = pacman.getCoords();
         
@@ -64,33 +43,21 @@ public class Ghost extends Entity implements Runnable {
                 // ghosts want to get away from pacman
                 if (distance > minDistance) {
                     minDistance = distance;
-                    this.currentDirection = direction;
+                    nextDirection = direction;
                 }
             } else {
                 // ghosts want to reach pacman
                 if (distance < maxDistance) {
                     maxDistance = distance;
-                    this.currentDirection = direction;
+                    nextDirection = direction;
                 }
             }
         }
+        return nextDirection;
     }
 
     @Override
     public boolean canKill(Entity enemy) {
         return (enemy instanceof PacMan && !((PacMan) enemy).isPowered());
-    }
-
-    @Override
-    public void run() {
-        while (this.movable.get()) {
-            try {
-                this.worker.sleep(this.interval);
-                this.setDirectionAccordingToPacMan();
-                this.game.move(this, this.currentDirection);
-            } catch (InterruptedException ex) {
-                System.out.println("Interrupted thread");
-            }
-        }
     }
 }

@@ -62,12 +62,14 @@ public class Game extends Observable {
         this.ghosts.forEach((ghost) -> {
             ghost.start();
         });
+        this.pacman.start();
     }
 
     public void stop() {
         this.ghosts.forEach((ghost) -> {
             ghost.stop();
         });
+        this.pacman.stop();
         this.running = false;
     }
 
@@ -98,7 +100,7 @@ public class Game extends Observable {
                             this.grid[x][y] = new Wall(coords);
                             break;
                         case 'P':
-                            this.pacman = new PacMan(coords, RIGHT, Color.YELLOW);
+                            this.pacman = new PacMan(coords, RIGHT, Color.YELLOW, this, 300);
                             this.grid[x][y] = new Lane(coords, this, this.pacman);
                             break;
                         case 'D':
@@ -106,7 +108,7 @@ public class Game extends Observable {
                             break;
                         case 'G':
                             Color color = ghostColors[ghostAdded];
-                            Ghost ghost = new Ghost(coords, UP, color, this, 200 + 100 * ghostAdded);
+                            Ghost ghost = new Ghost(coords, UP, color, this, 300 + 50*ghostAdded);
                             this.ghosts.add(ghost);
                             this.grid[x][y] = new Lane(coords, this, ghost);
                             ghostAdded++;
@@ -199,7 +201,7 @@ public class Game extends Observable {
     
     private void kill(Entity entity) {
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
-        entity.moveToStart();
+        entity.moveToStartingCoords();
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
         if(entity instanceof PacMan) {
             this.score = 0;
@@ -207,19 +209,20 @@ public class Game extends Observable {
             this.resetGhosts();
         }
     }
+    
+    public void updatePacManDirection(Direction direction) {
+        this.pacman.setDirection(direction);
+    }
 
-    public synchronized boolean move(Entity entity, Direction direction) {
+    public boolean move(Entity entity, Direction direction) {
         Point2D entityCoords = entity.getCoords();
         Point2D nextCoords = this.getNextCoords(entityCoords, direction);
 
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
             
-            if (entity instanceof PacMan) {
-                entity.setDirection(direction);
-                if (newTile instanceof GhostDoor) {
-                    return false;
-                }
+            if (entity instanceof PacMan && newTile instanceof GhostDoor) {
+                return false;
             }
 
             if (newTile instanceof Lane) {
