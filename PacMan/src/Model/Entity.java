@@ -17,6 +17,7 @@ public abstract class Entity implements Runnable {
     protected final Thread worker;
     protected final int interval;
     protected final Game game;
+    protected boolean turnBack;
     
     public Entity(Point2D coords, Direction direction, Color color, Game game, int interval) {
         this.currentDirection = direction;
@@ -25,6 +26,7 @@ public abstract class Entity implements Runnable {
         this.color = color;
         this.game = game;
         this.interval = interval;
+        this.turnBack = false;
         
         this.runnable = new AtomicBoolean(false);
         this.worker = new Thread(this);
@@ -71,6 +73,10 @@ public abstract class Entity implements Runnable {
         this.coords = this.startingCoords;
     }
     
+    public void setTurnBack() {
+        this.turnBack = !this.turnBack;
+    }
+    
     public abstract boolean canKill(Entity enemy);
     
     protected abstract Direction getNextDirection();
@@ -80,7 +86,12 @@ public abstract class Entity implements Runnable {
         while (this.runnable.get()) {
             try {
                 this.worker.sleep(this.interval);
-                this.game.move(this, this.getNextDirection());
+                if (this.turnBack) {
+                    this.game.move(this, this.currentDirection.getOpposed());
+                    this.turnBack = false;
+                } else {
+                    this.game.move(this, this.getNextDirection());
+                }
             } catch (InterruptedException ex) {
                 System.out.println("Interrupted thread");
             }

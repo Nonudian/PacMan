@@ -54,6 +54,7 @@ public class Lane extends Tile {
                 this.game.addScore(100);
             } else if (this.gum == SUPER) {
                 this.game.addScore(500);
+                this.game.notifyGhosts();
                 ((PacMan)this.entity).startPower();
             }
             this.gum = EMPTY;

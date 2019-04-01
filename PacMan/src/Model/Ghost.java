@@ -3,6 +3,7 @@ package Model;
 import Controller.Game;
 import Util.Direction;
 import java.util.ArrayList;
+import java.util.Random;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
@@ -26,27 +27,22 @@ public class Ghost extends Entity {
         }
         return possibleDirections;
     }
-    
+
     @Override
     protected Direction getNextDirection() {
         Direction nextDirection = this.currentDirection;
-        PacMan pacman = this.game.getPacMan();
-        Point2D pacmanCoords = pacman.getCoords();
-        
-        double maxDistance = Double.MAX_VALUE;
-        double minDistance = 0;
-        
-        for (Direction direction : getPossibleDirections()) {
-            Point2D nextCoords = this.game.getNextCoords(this.coords, direction);
-            double distance = pacmanCoords.distance(nextCoords);
-            if (pacman.isPowered()) {
-                // ghosts want to get away from pacman
-                if (distance > minDistance) {
-                    minDistance = distance;
-                    nextDirection = direction;
-                }
-            } else {
-                // ghosts want to reach pacman
+        Point2D pacmanCoords = this.game.getPacMan().getCoords();
+        ArrayList<Direction> possibleDirections = this.getPossibleDirections();
+
+        if (this.game.getPacMan().isPowered()) {
+            //ghosts choose random direction [PACMAN POWERED]
+            nextDirection = possibleDirections.get(new Random().nextInt(possibleDirections.size()));
+        } else {
+            // ghosts reach pacman [PACMAN UNPOWERED]
+            double maxDistance = Double.MAX_VALUE;
+            for (Direction direction : possibleDirections) {
+                Point2D nextCoords = this.game.getNextCoords(this.coords, direction);
+                double distance = pacmanCoords.distance(nextCoords);
                 if (distance < maxDistance) {
                     maxDistance = distance;
                     nextDirection = direction;

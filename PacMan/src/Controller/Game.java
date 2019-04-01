@@ -39,18 +39,18 @@ public class Game extends Observable {
         this.initGrid();
         this.linkPortals();
     }
-    
+
     public void resetGum() {
-        for(int j = 0; j < this.dimension; j++) {
-            for(int i = 0; i < this.dimension; i++) {
+        for (int j = 0; j < this.dimension; j++) {
+            for (int i = 0; i < this.dimension; i++) {
                 Tile tile = this.grid[i][j];
-                if(tile instanceof Lane) {
+                if (tile instanceof Lane) {
                     ((Lane) tile).resetGum();
                 }
             }
         }
     }
-    
+
     public void resetGhosts() {
         this.ghosts.forEach((ghost) -> {
             this.kill(ghost);
@@ -108,7 +108,7 @@ public class Game extends Observable {
                             break;
                         case 'G':
                             Color color = ghostColors[ghostAdded];
-                            Ghost ghost = new Ghost(coords, UP, color, this, 300 + 50*ghostAdded);
+                            Ghost ghost = new Ghost(coords, UP, color, this, 300 + 50 * ghostAdded);
                             this.ghosts.add(ghost);
                             this.grid[x][y] = new Lane(coords, this, ghost);
                             ghostAdded++;
@@ -194,22 +194,28 @@ public class Game extends Observable {
         return this.score;
     }
 
+    public void notifyGhosts() {
+        this.ghosts.forEach((ghost) -> {
+            ghost.setTurnBack();
+        });
+    }
+
     private void applyMove(Entity entity, Point2D newCoords) {
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
         entity.moveTo(newCoords);
     }
-    
+
     private void kill(Entity entity) {
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
         entity.moveToStartingCoords();
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
-        if(entity instanceof PacMan) {
+        if (entity instanceof PacMan) {
             this.score = 0;
             this.resetGum();
             this.resetGhosts();
         }
     }
-    
+
     public void updatePacManDirection(Direction direction) {
         this.pacman.setDirection(direction);
     }
@@ -220,7 +226,7 @@ public class Game extends Observable {
 
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
-            
+
             if (entity instanceof PacMan && newTile instanceof GhostDoor) {
                 return false;
             }
@@ -245,11 +251,14 @@ public class Game extends Observable {
                         return false;
                     }
                 }
-                
+
+                if (!(entity instanceof PacMan)) {
+                    entity.setDirection(direction);
+                }
                 this.applyMove(entity, nextCoords);
                 newLane.setEntity(entity);
                 this.update();
-                
+
                 return true;
             }
         }
