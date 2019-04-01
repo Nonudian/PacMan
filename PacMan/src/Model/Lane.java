@@ -50,12 +50,19 @@ public class Lane extends Tile {
 
     private boolean eatGum() {
         if (this.entity instanceof PacMan) {
-            if (this.gum == NORMAL) {
-                this.game.addScore(100);
-            } else if (this.gum == SUPER) {
-                this.game.addScore(500);
-                this.game.notifyGhosts();
-                ((PacMan)this.entity).startPower();
+            switch(this.gum) {
+                case NORMAL:
+                    this.game.addScore(100);
+                    break;
+                case SUPER:
+                    this.game.addScore(500);
+                    this.game.notifyGhosts();
+                    ((PacMan)this.entity).startPower();
+                    break;
+                case INVERTED:
+                    this.game.addScore(500);
+                    this.entity.setTurnBack(true);
+                    break;
             }
             this.gum = EMPTY;
             return true;

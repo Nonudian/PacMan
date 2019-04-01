@@ -1,5 +1,5 @@
 package Util;
 
 public enum GumType {
-    EMPTY, NORMAL, SUPER;
+    EMPTY, NORMAL, SUPER, INVERTED;
 }

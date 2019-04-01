@@ -196,7 +196,7 @@ public class Game extends Observable {
 
     public void notifyGhosts() {
         this.ghosts.forEach((ghost) -> {
-            ghost.setTurnBack();
+            ghost.setTurnBack(true);
         });
     }
 
@@ -211,12 +211,16 @@ public class Game extends Observable {
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
         if (entity instanceof PacMan) {
             this.score = 0;
+            entity.setTurnBack(false);
             this.resetGum();
             this.resetGhosts();
         }
     }
 
     public void updatePacManDirection(Direction direction) {
+        if (this.pacman.isTurnBack()) {
+            direction = direction.getOpposed();
+        }
         this.pacman.setDirection(direction);
     }
 

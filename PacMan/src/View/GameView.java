@@ -67,8 +67,12 @@ public class GameView extends Application {
                     GumType type = lane.getState();
                     if (type != EMPTY) {
                         Circle gum = new Circle(15, 15, 5, Color.WHITE);
-                        if (type == SUPER) {
-                            gum.setRadius(10);
+                        switch(type) {
+                            case INVERTED:
+                                gum.setFill(Color.RED);
+                            case SUPER:
+                                gum.setRadius(10);
+                                break;
                         }
                         pane.getChildren().add(gum);
                         gum.requestFocus();
