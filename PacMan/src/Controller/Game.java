@@ -221,7 +221,14 @@ public class Game extends Observable {
         if (this.pacman.isTurnBack()) {
             direction = direction.getOpposed();
         }
-        this.pacman.setDirection(direction);
+
+        Point2D adjacentCoords = this.getNextCoords(this.pacman.getCoords(), direction);
+        if (this.isReachable(adjacentCoords)) {
+            Tile tile = this.getTileByCoords(adjacentCoords);
+            if (tile instanceof Lane && !(tile instanceof GhostDoor)) {
+                this.pacman.setDirection(direction);
+            }
+        }
     }
 
     public boolean move(Entity entity, Direction direction) {
@@ -247,6 +254,10 @@ public class Game extends Observable {
                 if (enemy != null) {
                     if (entity.canKill(enemy)) {
                         this.kill(enemy);
+                        if (entity instanceof Ghost) {
+                            this.update();
+                            return false;
+                        }
                     } else if (enemy.canKill(entity)) {
                         this.kill(entity);
                         this.update();
