@@ -9,6 +9,8 @@ import javafx.scene.paint.Color;
 public abstract class Entity implements Runnable {
 
     protected Direction currentDirection;
+    protected Direction defaultDirection;
+    
     protected Point2D coords;
     protected final Point2D startingCoords;
     
@@ -26,6 +28,7 @@ public abstract class Entity implements Runnable {
 
     public Entity(Point2D coords, Direction direction, Color color, Game game, int interval) {
         this.currentDirection = direction;
+        this.defaultDirection = direction;
         this.startingCoords = coords;
         this.coords = coords;
         this.color = color;
@@ -98,10 +101,26 @@ public abstract class Entity implements Runnable {
     public void setInterval(int interval) {
         this.interval = interval;
     }
+    
+    public int getInterval() {
+        return this.interval;
+    }
+    
+    public Direction getDefaultDirection() {
+        return this.defaultDirection;
+    }
+    
+    public void resetDirection() {
+        this.setDirection(this.defaultDirection);
+    }
+    
+    public void resetTurnBack() {
+        this.setTurnBack(false);
+    }
 
     public abstract boolean canKill(Entity enemy);
 
-    protected abstract Direction getNextDirection();
+    public abstract Direction getNextDirection();
 
     @Override
     public void run() {
@@ -110,7 +129,7 @@ public abstract class Entity implements Runnable {
                 this.worker.sleep(this.interval);
                 if (this.turnBack && this instanceof Ghost) {
                     this.game.move(this, this.currentDirection.getOpposed());
-                    this.setTurnBack(false);
+                    this.resetTurnBack();
                 } else {
                     this.game.move(this, this.getNextDirection());
                 }

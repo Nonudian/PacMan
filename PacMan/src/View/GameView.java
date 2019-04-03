@@ -5,6 +5,7 @@ import Model.Entity;
 import Controller.Game;
 import Model.Ghost;
 import Model.GhostDoor;
+import Model.GhostLane;
 import Util.GumType;
 import static Util.GumType.*;
 import Model.Tile;
@@ -35,10 +36,11 @@ public class GameView extends Application {
 
     private void initObservable() {
         this.observer = (Observable o, Object arg) -> {
-            // l'observer observe l'obervable (update est exécuté dès notifyObservers() est appelé côté modèle)
             Platform.runLater(() -> {
-                this.drawGame();
-                this.display();
+                if (!this.game.isFinished()) {
+                    this.drawGame();
+                    this.display();
+                }
             });
         };
         this.game.addObserver(this.observer);
@@ -58,8 +60,12 @@ public class GameView extends Application {
                 if (tile instanceof Lane) {
                     if (tile instanceof Portal) {
                         rect.setFill(Color.WHITE);
-                    } else if (tile instanceof GhostDoor) {
-                        rect.setFill(Color.GREY);
+                    } else if (tile instanceof GhostLane) {
+                        if(tile instanceof GhostDoor) {
+                            rect.setFill(Color.GREY);
+                        } else {
+                            rect.setFill(Color.BLUE);
+                        }
                     } else {
                         rect.setFill(Color.BLACK);
                     }
@@ -67,7 +73,7 @@ public class GameView extends Application {
                     GumType type = lane.getState();
                     if (type != EMPTY) {
                         Circle gum = new Circle(15, 15, 5, Color.WHITE);
-                        switch(type) {
+                        switch (type) {
                             case INVERTED:
                                 gum.setFill(Color.RED);
                             case SUPER:
@@ -112,7 +118,7 @@ public class GameView extends Application {
                         }
                     }
                 } else {
-                    rect.setFill(Color.BLUE);
+                    rect.setFill(Color.DARKBLUE);
                 }
                 this.gridTiles.getChildren().add(pane);
             }
@@ -121,11 +127,6 @@ public class GameView extends Application {
 
     private void display() {
         Scene scene = new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30);
-
-        this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
-            this.game.stop();
-            this.stage.close();
-        });
 
         scene.setOnKeyReleased((event) -> {
             switch (event.getCode()) {
@@ -149,6 +150,10 @@ public class GameView extends Application {
     public void start(Stage primaryStage) throws Exception {
         this.game = new Game();
         this.stage = primaryStage;
+        this.stage.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
+            this.game.stop();
+            this.stage.close();
+        });
         this.drawGame();
         this.display();
         this.initObservable();

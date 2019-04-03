@@ -3,6 +3,7 @@ package Controller;
 import Model.Entity;
 import Model.Ghost;
 import Model.GhostDoor;
+import Model.GhostLane;
 import Model.Lane;
 import Model.PacMan;
 import Model.Portal;
@@ -66,11 +67,11 @@ public class Game extends Observable {
     }
 
     public void stop() {
+        this.running = false;
         this.ghosts.forEach((ghost) -> {
             ghost.stop();
         });
         this.pacman.stop();
-        this.running = false;
     }
 
     public void update() {
@@ -104,7 +105,10 @@ public class Game extends Observable {
                             this.grid[x][y] = new Lane(coords, this, this.pacman);
                             break;
                         case 'D':
-                            this.grid[x][y] = new GhostDoor(coords, this);
+                            this.grid[x][y] = new GhostDoor(coords, this, UP);
+                            break;
+                        case 'S':
+                            this.grid[x][y] = new GhostLane(coords, this);
                             break;
                         case 'G':
                             Color color = ghostColors[ghostAdded];
@@ -207,14 +211,34 @@ public class Game extends Observable {
 
     private void kill(Entity entity) {
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
-        entity.moveToStartingCoords();
-        ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
+        Entity conflict = ((Lane) this.getTileByCoords(entity.getStartingCoords())).getEntity();
+        if (conflict != null && entity instanceof Ghost && conflict instanceof Ghost) {
+            synchronized (entity) {
+                while (conflict.getCoords() == entity.getStartingCoords()) {
+                    try {
+                        entity.wait();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                this.respawn(entity);
+                entity.notify();
+            }
+        } else {
+            this.respawn(entity);
+        }
+    }
+
+    private void respawn(Entity entity) {
         if (entity instanceof PacMan) {
             this.score = 0;
-            entity.setTurnBack(false);
             this.resetGum();
             this.resetGhosts();
         }
+        entity.resetTurnBack();
+        entity.resetDirection();
+        entity.moveToStartingCoords();
+        ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
     }
 
     public void updatePacManDirection(Direction direction) {
@@ -225,7 +249,7 @@ public class Game extends Observable {
         Point2D adjacentCoords = this.getNextCoords(this.pacman.getCoords(), direction);
         if (this.isReachable(adjacentCoords)) {
             Tile tile = this.getTileByCoords(adjacentCoords);
-            if (tile instanceof Lane && !(tile instanceof GhostDoor)) {
+            if (tile instanceof Lane && !(tile instanceof GhostLane)) {
                 this.pacman.setDirection(direction);
             }
         }
@@ -238,7 +262,7 @@ public class Game extends Observable {
         if (this.isReachable(nextCoords)) {
             Tile newTile = this.getTileByCoords(nextCoords);
 
-            if (entity instanceof PacMan && newTile instanceof GhostDoor) {
+            if (entity instanceof PacMan && newTile instanceof GhostLane) {
                 return false;
             }
 

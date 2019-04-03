@@ -69,6 +69,10 @@ public class Lane extends Tile {
         }
         return false;
     }
+    
+    public boolean hasEntity() {
+        return this.entity != null;
+    }
 
     public Entity getEntity() {
         return this.entity;

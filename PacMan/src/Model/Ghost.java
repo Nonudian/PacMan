@@ -19,17 +19,23 @@ public class Ghost extends Entity {
             if (this.currentDirection.getOpposed() != direction) {
                 Point2D adjacentCoords = this.game.getNextCoords(this.coords, direction);
                 if (this.game.isReachable(adjacentCoords)) {
-                    if (this.game.getTileByCoords(adjacentCoords) instanceof Lane) {
-                        possibleDirections.add(direction);
+                    Tile tile = this.game.getTileByCoords(adjacentCoords);
+                    if (tile instanceof Lane) {
+                        if(!(tile instanceof GhostDoor) || ((GhostDoor) tile).getPermittedDirection() == direction) {
+                            possibleDirections.add(direction);
+                        }
                     }
                 }
             }
+        }
+        if(possibleDirections.isEmpty()) {
+            possibleDirections.add(this.currentDirection.getOpposed());
         }
         return possibleDirections;
     }
 
     @Override
-    protected Direction getNextDirection() {
+    public Direction getNextDirection() {
         Direction nextDirection = this.currentDirection;
         Point2D pacmanCoords = this.game.getPacMan().getCoords();
         ArrayList<Direction> possibleDirections = this.getPossibleDirections();

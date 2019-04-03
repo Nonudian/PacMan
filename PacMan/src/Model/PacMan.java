@@ -40,7 +40,6 @@ public class PacMan extends Entity {
     }
 
     public void endPower() {
-        System.out.println("endpower");
         this.setInterval(this.interval * 2);
         this.powered = false;
         this.setColor(this.defaultColor);
@@ -52,7 +51,7 @@ public class PacMan extends Entity {
     }
 
     @Override
-    protected Direction getNextDirection() {
+    public Direction getNextDirection() {
         return this.currentDirection;
     }
 }
