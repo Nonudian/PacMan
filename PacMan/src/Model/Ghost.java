@@ -8,9 +8,24 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
 public class Ghost extends Entity {
+    
+    private boolean outside;
 
     public Ghost(Point2D coords, Direction direction, Color color, Game game, int interval) {
         super(coords, direction, color, game, interval);
+        this.outside = false;
+    }
+    
+    public boolean isOutside() {
+        return this.outside;
+    }
+    
+    public void resetOutside() {
+        this.outside = false;
+    }
+    
+    public void setOutside(boolean outside) {
+        this.outside = outside;
     }
 
     private ArrayList<Direction> getPossibleDirections() {
@@ -22,7 +37,10 @@ public class Ghost extends Entity {
                     Tile tile = this.game.getTileByCoords(adjacentCoords);
                     if (tile instanceof Lane) {
                         if(!(tile instanceof GhostDoor) || ((GhostDoor) tile).getPermittedDirection() == direction) {
-                            possibleDirections.add(direction);
+                            Entity entity = ((Lane) tile).getEntity();
+                            if(entity == null || entity instanceof PacMan) {
+                                possibleDirections.add(direction);
+                            }
                         }
                     }
                 }
@@ -34,10 +52,8 @@ public class Ghost extends Entity {
         return possibleDirections;
     }
 
-    @Override
-    public Direction getNextDirection() {
+    private Direction getClosestDirection(Point2D aimedCoords) {
         Direction nextDirection = this.currentDirection;
-        Point2D pacmanCoords = this.game.getPacMan().getCoords();
         ArrayList<Direction> possibleDirections = this.getPossibleDirections();
 
         if (this.game.getPacMan().isPowered()) {
@@ -48,7 +64,7 @@ public class Ghost extends Entity {
             double maxDistance = Double.MAX_VALUE;
             for (Direction direction : possibleDirections) {
                 Point2D nextCoords = this.game.getNextCoords(this.coords, direction);
-                double distance = pacmanCoords.distance(nextCoords);
+                double distance = aimedCoords.distance(nextCoords);
                 if (distance < maxDistance) {
                     maxDistance = distance;
                     nextDirection = direction;
@@ -56,6 +72,18 @@ public class Ghost extends Entity {
             }
         }
         return nextDirection;
+    }
+    
+    @Override
+    public Direction getNextDirection() {
+        Point2D aimedCoords;
+        if(this.isOutside()) {
+            aimedCoords = this.game.getPacMan().getCoords();
+        } else {
+            GhostDoor ghostdoor = this.game.getGhostDoor();
+            aimedCoords = this.game.getNextCoords(ghostdoor.getCoords(), ghostdoor.getPermittedDirection());
+        }
+        return this.getClosestDirection(aimedCoords);
     }
 
     @Override

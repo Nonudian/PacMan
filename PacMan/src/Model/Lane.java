@@ -79,6 +79,9 @@ public class Lane extends Tile {
     }
 
     public void removeEntity() {
+        if(this instanceof GhostDoor) {
+            ((Ghost)this.entity).setOutside(true);
+        }
         this.entity = null;
     }
     

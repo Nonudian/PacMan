@@ -32,6 +32,7 @@ public class Game extends Observable {
     private int score;
     private ArrayList<Portal> portals;
     private PacMan pacman;
+    private GhostDoor ghostdoor;
 
     public Game() {
         this.dimension = 21;
@@ -84,7 +85,7 @@ public class Game extends Observable {
         this.ghosts = new ArrayList();
         this.grid = new Tile[this.dimension][this.dimension];
 
-        Color[] ghostColors = new Color[]{RED, PINK, CYAN, ORANGE};
+        Color[] ghostColors = new Color[]{RED, CYAN, PINK, ORANGE};
         int ghostAdded = 0;
 
         File file = new File("./src/Assets/gridFile.txt");
@@ -105,7 +106,8 @@ public class Game extends Observable {
                             this.grid[x][y] = new Lane(coords, this, this.pacman);
                             break;
                         case 'D':
-                            this.grid[x][y] = new GhostDoor(coords, this, UP);
+                            this.ghostdoor = new GhostDoor(coords, this, UP);
+                            this.grid[x][y] = this.ghostdoor;
                             break;
                         case 'S':
                             this.grid[x][y] = new GhostLane(coords, this);
@@ -158,6 +160,10 @@ public class Game extends Observable {
 
     public PacMan getPacMan() {
         return this.pacman;
+    }
+    
+    public GhostDoor getGhostDoor() {
+        return this.ghostdoor;
     }
 
     public boolean isFinished() {
@@ -212,6 +218,7 @@ public class Game extends Observable {
     private void kill(Entity entity) {
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
         Entity conflict = ((Lane) this.getTileByCoords(entity.getStartingCoords())).getEntity();
+        // for ghosts, wait thread until they can respawn
         if (conflict != null && entity instanceof Ghost && conflict instanceof Ghost) {
             synchronized (entity) {
                 while (conflict.getCoords() == entity.getStartingCoords()) {
@@ -234,6 +241,8 @@ public class Game extends Observable {
             this.score = 0;
             this.resetGum();
             this.resetGhosts();
+        } else {
+            ((Ghost)entity).resetOutside();
         }
         entity.resetTurnBack();
         entity.resetDirection();
