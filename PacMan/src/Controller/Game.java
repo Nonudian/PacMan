@@ -204,9 +204,15 @@ public class Game extends Observable {
         return this.score;
     }
 
-    public void notifyGhosts() {
+    public void notifyPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            ghost.setTurnBack(true);
+            ghost.scare();
+        });
+    }
+    
+    public void notifyEndPowerToGhosts() {
+        this.ghosts.forEach((ghost) -> {
+            ghost.resetScared();
         });
     }
 
@@ -237,16 +243,7 @@ public class Game extends Observable {
     }
 
     private void respawn(Entity entity) {
-        if (entity instanceof PacMan) {
-            this.score = 0;
-            this.resetGum();
-            this.resetGhosts();
-        } else {
-            ((Ghost)entity).resetOutside();
-        }
-        entity.resetTurnBack();
-        entity.resetDirection();
-        entity.moveToStartingCoords();
+        entity.reset();
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
     }
 

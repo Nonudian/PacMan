@@ -40,6 +40,13 @@ public abstract class Entity implements Runnable {
         this.runnable = new AtomicBoolean(false);
         this.worker = new Thread(this);
     }
+    
+    public void reset() {
+        this.resetTurnBack();
+        this.resetDirection();
+        this.moveToStartingCoords();
+        this.resetColor();
+    }
 
     public void start() {
         this.runnable.set(true);
@@ -116,6 +123,10 @@ public abstract class Entity implements Runnable {
     
     public void resetTurnBack() {
         this.setTurnBack(false);
+    }
+    
+    public void resetColor() {
+        this.setColor(this.defaultColor);
     }
 
     public abstract boolean canKill(Entity enemy);

@@ -11,7 +11,7 @@ public class Lane extends Tile {
     private GumType gum;
     private final GumType startGum;
     private Entity entity;
-    
+
     public Lane(Point2D coords, Game game) {
         super(coords);
         this.game = game;
@@ -35,7 +35,7 @@ public class Lane extends Tile {
         this.startGum = EMPTY;
         this.entity = entity;
     }
-    
+
     public GumType getType() {
         return this.startGum;
     }
@@ -50,18 +50,19 @@ public class Lane extends Tile {
 
     private boolean eatGum() {
         if (this.entity instanceof PacMan) {
-            switch(this.gum) {
+            switch (this.gum) {
                 case NORMAL:
                     this.game.addScore(100);
                     break;
                 case SUPER:
                     this.game.addScore(500);
-                    this.game.notifyGhosts();
-                    ((PacMan)this.entity).startPower();
+                    ((PacMan) this.entity).startPower();
                     break;
                 case INVERTED:
-                    this.game.addScore(500);
-                    this.entity.setTurnBack(true);
+                    if (!((PacMan) this.entity).isPowered()) {
+                        this.game.addScore(500);
+                        ((PacMan) this.entity).startSick();
+                    }
                     break;
             }
             this.gum = EMPTY;
@@ -69,7 +70,7 @@ public class Lane extends Tile {
         }
         return false;
     }
-    
+
     public boolean hasEntity() {
         return this.entity != null;
     }
@@ -79,12 +80,12 @@ public class Lane extends Tile {
     }
 
     public void removeEntity() {
-        if(this instanceof GhostDoor) {
-            ((Ghost)this.entity).setOutside(true);
+        if (this instanceof GhostDoor) {
+            ((Ghost) this.entity).setOutside(true);
         }
         this.entity = null;
     }
-    
+
     public void resetGum() {
         this.gum = this.startGum;
     }

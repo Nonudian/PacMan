@@ -8,22 +8,46 @@ import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
 public class Ghost extends Entity {
-    
+
     private boolean outside;
+    private boolean scared;
 
     public Ghost(Point2D coords, Direction direction, Color color, Game game, int interval) {
         super(coords, direction, color, game, interval);
         this.outside = false;
+        this.scared = false;
+    }
+
+    @Override
+    public void reset() {
+        this.resetOutside();
+        this.resetScared();
+        super.reset();
+    }
+
+    public void scare() {
+        this.setTurnBack(true);
+        this.setColor(Color.DARKORCHID);
+        this.scared = true;
     }
     
+    public boolean isScared() {
+        return this.scared;
+    }
+    
+    public void resetScared() {
+        this.scared = false;
+        this.resetColor();
+    }
+
     public boolean isOutside() {
         return this.outside;
     }
-    
+
     public void resetOutside() {
         this.outside = false;
     }
-    
+
     public void setOutside(boolean outside) {
         this.outside = outside;
     }
@@ -36,9 +60,9 @@ public class Ghost extends Entity {
                 if (this.game.isReachable(adjacentCoords)) {
                     Tile tile = this.game.getTileByCoords(adjacentCoords);
                     if (tile instanceof Lane) {
-                        if(!(tile instanceof GhostDoor) || ((GhostDoor) tile).getPermittedDirection() == direction) {
+                        if (!(tile instanceof GhostDoor) || ((GhostDoor) tile).getPermittedDirection() == direction) {
                             Entity entity = ((Lane) tile).getEntity();
-                            if(entity == null || entity instanceof PacMan) {
+                            if (entity == null || entity instanceof PacMan) {
                                 possibleDirections.add(direction);
                             }
                         }
@@ -46,7 +70,7 @@ public class Ghost extends Entity {
                 }
             }
         }
-        if(possibleDirections.isEmpty()) {
+        if (possibleDirections.isEmpty()) {
             possibleDirections.add(this.currentDirection.getOpposed());
         }
         return possibleDirections;
@@ -56,7 +80,7 @@ public class Ghost extends Entity {
         Direction nextDirection = this.currentDirection;
         ArrayList<Direction> possibleDirections = this.getPossibleDirections();
 
-        if (this.game.getPacMan().isPowered()) {
+        if (this.isScared()) {
             //ghosts choose random direction [PACMAN POWERED]
             nextDirection = possibleDirections.get(new Random().nextInt(possibleDirections.size()));
         } else {
@@ -73,11 +97,11 @@ public class Ghost extends Entity {
         }
         return nextDirection;
     }
-    
+
     @Override
     public Direction getNextDirection() {
         Point2D aimedCoords;
-        if(this.isOutside()) {
+        if (this.isOutside()) {
             aimedCoords = this.game.getPacMan().getCoords();
         } else {
             GhostDoor ghostdoor = this.game.getGhostDoor();
@@ -88,6 +112,6 @@ public class Ghost extends Entity {
 
     @Override
     public boolean canKill(Entity enemy) {
-        return (enemy instanceof PacMan && !((PacMan) enemy).isPowered());
+        return (enemy instanceof PacMan && !this.isScared());
     }
 }
