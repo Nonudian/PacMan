@@ -12,6 +12,9 @@ import Model.Tile;
 import Model.Lane;
 import Model.PacMan;
 import Model.Portal;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -25,13 +28,23 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class GameView extends Application {
 
     private Game game;
     private Observer observer;
+    private TilePane board;
     private TilePane gridTiles;
+    private BorderPane rootPane;
     private Stage stage;
 
     private void initObservable() {
@@ -61,7 +74,7 @@ public class GameView extends Application {
                     if (tile instanceof Portal) {
                         rect.setFill(Color.WHITE);
                     } else if (tile instanceof GhostLane) {
-                        if(tile instanceof GhostDoor) {
+                        if (tile instanceof GhostDoor) {
                             rect.setFill(Color.GREY);
                         } else {
                             rect.setFill(Color.BLUE);
@@ -123,10 +136,59 @@ public class GameView extends Application {
                 this.gridTiles.getChildren().add(pane);
             }
         }
+        this.drawBoard();
+
+        this.rootPane = new BorderPane();
+        this.rootPane.setTop(this.board);
+        this.rootPane.setBottom(this.gridTiles);
+    }
+
+    private void drawBoard() {
+        this.board = new TilePane();
+
+        int rectHeight = this.game.getDimension() * 30 / 3;
+
+        // score part
+        StackPane scorePane = new StackPane();
+        Rectangle scoreRect = new Rectangle(rectHeight, 60);
+        Text score = new Text(27, 27, String.valueOf(this.game.getScore()));
+        score.setFill(Color.WHITE);
+        try {
+            InputStream inputstream = new FileInputStream("./src/Assets/Fonts/emulogic.ttf");
+            score.setFont(Font.loadFont(inputstream, 18));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GameView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        scorePane.getChildren().addAll(scoreRect, score);
+
+        // banner part
+        StackPane bannerPane = new StackPane();
+        ImageView imageView = new ImageView("/Assets/Images/Pac_Man_Logo.png");
+        Rectangle bannerRect = new Rectangle(rectHeight, 60);
+        bannerPane.getChildren().addAll(bannerRect, imageView);
+
+        // lives part
+        StackPane livesPane = new StackPane();
+        Rectangle livesRect = new Rectangle(rectHeight, 60);
+        TilePane lives = new TilePane();
+        for (int i = 0; i < this.game.getPacMan().getRemainingLives(); i++) {
+            Arc pacmanLife = new Arc(0, 0, 10, 10, 45, 270);
+            pacmanLife.setType(ArcType.ROUND);
+            pacmanLife.setFill(Color.YELLOW);
+            lives.getChildren().add(pacmanLife);
+        }
+        lives.setAlignment(Pos.CENTER);
+        livesPane.getChildren().addAll(livesRect, lives);
+        
+
+        this.board.setMaxSize(this.game.getDimension() * 30, 60);
+        this.board.getChildren().addAll(scorePane, bannerPane, livesPane);
     }
 
     private void display() {
-        Scene scene = new Scene(this.gridTiles, this.game.getDimension() * 30, this.game.getDimension() * 30);
+        int sceneHeight = this.game.getDimension() * 30;
+        int sceneWidth = this.game.getDimension() * 30 + 60;
+        Scene scene = new Scene(this.rootPane, sceneHeight, sceneWidth);
 
         scene.setOnKeyReleased((event) -> {
             switch (event.getCode()) {
@@ -138,11 +200,13 @@ public class GameView extends Application {
             }
         });
 
+        Image icon = new Image(getClass().getResourceAsStream("/Assets/Images/Pac_Man_Icon.png"));
+        this.stage.getIcons().add(icon);
         this.stage.setScene(scene);
         this.stage.setResizable(false);
         this.stage.sizeToScene();
         this.stage.centerOnScreen();
-        this.stage.setTitle("Pac Man");
+        this.stage.setTitle("Pac-Man Game");
         this.stage.show();
     }
 

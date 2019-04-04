@@ -161,7 +161,7 @@ public class Game extends Observable {
     public PacMan getPacMan() {
         return this.pacman;
     }
-    
+
     public GhostDoor getGhostDoor() {
         return this.ghostdoor;
     }
@@ -207,12 +207,14 @@ public class Game extends Observable {
     public void notifyPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
             ghost.scare();
+            ghost.setInterval(ghost.getDefaultInterval() * 2);
         });
     }
-    
+
     public void notifyEndPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
             ghost.resetScared();
+            ghost.resetInterval();
         });
     }
 
@@ -222,6 +224,11 @@ public class Game extends Observable {
     }
 
     private void kill(Entity entity) {
+        if (entity instanceof PacMan && ((PacMan) entity).isAlive()) {
+            this.getPacMan().loseLife();
+            ((PacMan) entity).setAlive(false);
+        }
+
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
         Entity conflict = ((Lane) this.getTileByCoords(entity.getStartingCoords())).getEntity();
         // for ghosts, wait thread until they can respawn
@@ -243,6 +250,9 @@ public class Game extends Observable {
     }
 
     private void respawn(Entity entity) {
+        if (entity instanceof PacMan && !((PacMan) entity).isAlive()) {
+            ((PacMan) entity).setAlive(true);
+        }
         entity.reset();
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
     }

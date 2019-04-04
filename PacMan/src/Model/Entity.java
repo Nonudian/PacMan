@@ -35,6 +35,7 @@ public abstract class Entity implements Runnable {
         this.defaultColor = color;
         this.game = game;
         this.interval = interval;
+        this.oldInterval = interval;
         this.turnBack = false;
 
         this.runnable = new AtomicBoolean(false);
@@ -103,6 +104,14 @@ public abstract class Entity implements Runnable {
     
     public boolean isTurnBack() {
         return this.turnBack;
+    }
+    
+    public void resetInterval() {
+        this.setInterval(this.oldInterval);
+    }
+    
+    public int getDefaultInterval() {
+        return this.oldInterval;
     }
     
     public void setInterval(int interval) {

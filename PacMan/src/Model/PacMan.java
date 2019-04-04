@@ -2,6 +2,7 @@ package Model;
 
 import Controller.Game;
 import Util.Direction;
+import java.util.concurrent.atomic.AtomicBoolean;
 import static javafx.animation.Animation.Status.RUNNING;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -14,10 +15,16 @@ public class PacMan extends Entity {
     private boolean powered;
     private boolean sick;
     private final Timeline powerTimeline;
+    private final int defaultLives;
+    private int currentLives;
+    private AtomicBoolean alive;
 
     public PacMan(Point2D coords, Direction direction, Color color, Game game, int interval) {
         super(coords, direction, color, game, interval);
         this.powered = false;
+        this.defaultLives = 3;
+        this.currentLives = this.defaultLives;
+        this.alive = new AtomicBoolean(true);
         this.powerTimeline = new Timeline(new KeyFrame(Duration.seconds(10), (e) -> {
             this.endPower();
         }));
@@ -50,13 +57,12 @@ public class PacMan extends Entity {
     }
 
     public void startPower() {
+        this.game.notifyPowerToGhosts();
         if (!this.isPowered()) {
             this.resetTurnBack();
             this.setColor(Color.ORANGE);
             this.resetSick();
             this.powered = true;
-            this.setInterval(this.interval / 2);
-            this.game.notifyPowerToGhosts();
         }
         if (this.powerTimeline.getStatus() == RUNNING) {
             this.powerTimeline.jumpTo(Duration.ZERO);
@@ -66,11 +72,26 @@ public class PacMan extends Entity {
     }
 
     public void endPower() {
-        this.setInterval(this.interval * 2);
         this.powered = false;
         this.setColor(this.defaultColor);
         this.game.notifyEndPowerToGhosts();
     }
+    
+    public int getRemainingLives() {
+        return this.currentLives;
+    }
+    
+    public void loseLife() {
+        this.currentLives--;
+    }
+    
+    public boolean isAlive() {
+        return this.alive.get();
+    }
+    
+    public void setAlive(boolean alive) {
+        this.alive.set(alive);
+    } 
 
     @Override
     public boolean canKill(Entity enemy) {
