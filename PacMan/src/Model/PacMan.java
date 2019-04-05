@@ -32,9 +32,18 @@ public class PacMan extends Entity {
 
     @Override
     public void reset() {
-        this.game.resetGum();
         this.game.resetGhosts();
         this.resetSick();
+        if (this.game.getGumLanes().isEmpty()) {
+            // victory
+            this.game.resetGum();
+            this.resetLives();
+        } else if (this.currentLives == 0) {
+            // defeat
+            this.game.resetGum();
+            this.game.resetScore();
+            this.resetLives();
+        }
         super.reset();
     }
 
@@ -76,26 +85,32 @@ public class PacMan extends Entity {
         this.setColor(this.defaultColor);
         this.game.notifyEndPowerToGhosts();
     }
-    
+
     public int getRemainingLives() {
         return this.currentLives;
     }
-    
+
     public void loseLife() {
-        this.currentLives--;
+        if (currentLives > 0) {
+            this.currentLives--;
+        }
     }
-    
+
+    public void resetLives() {
+        this.currentLives = this.defaultLives;
+    }
+
     public boolean isAlive() {
         return this.alive.get();
     }
-    
+
     public void setAlive(boolean alive) {
         this.alive.set(alive);
-    } 
+    }
 
     @Override
     public boolean canKill(Entity enemy) {
-        return (enemy instanceof Ghost && this.powered && ((Ghost)enemy).isScared());
+        return (enemy instanceof Ghost && this.powered && ((Ghost) enemy).isScared());
     }
 
     @Override

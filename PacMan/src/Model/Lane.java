@@ -65,6 +65,7 @@ public class Lane extends Tile {
                     }
                     break;
             }
+            this.game.removeGumLane(this);
             this.gum = EMPTY;
             return true;
         }
@@ -88,6 +89,9 @@ public class Lane extends Tile {
 
     public void resetGum() {
         this.gum = this.startGum;
+        if (this.gum != EMPTY) {
+            this.game.addGumLane(this);
+        }
     }
 
     public void setEntity(Entity newEntity) {

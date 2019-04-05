@@ -33,6 +33,7 @@ public class Game extends Observable {
     private ArrayList<Portal> portals;
     private PacMan pacman;
     private GhostDoor ghostdoor;
+    private ArrayList<Lane> gumLanes;
 
     public Game() {
         this.dimension = 21;
@@ -43,6 +44,7 @@ public class Game extends Observable {
     }
 
     public void resetGum() {
+        this.gumLanes.clear();
         for (int j = 0; j < this.dimension; j++) {
             for (int i = 0; i < this.dimension; i++) {
                 Tile tile = this.grid[i][j];
@@ -57,6 +59,10 @@ public class Game extends Observable {
         this.ghosts.forEach((ghost) -> {
             this.kill(ghost);
         });
+    }
+
+    public void resetScore() {
+        this.score = 0;
     }
 
     public void start() {
@@ -84,6 +90,7 @@ public class Game extends Observable {
         this.portals = new ArrayList();
         this.ghosts = new ArrayList();
         this.grid = new Tile[this.dimension][this.dimension];
+        this.gumLanes = new ArrayList();
 
         Color[] ghostColors = new Color[]{RED, CYAN, PINK, ORANGE};
         int ghostAdded = 0;
@@ -125,8 +132,13 @@ public class Game extends Observable {
                             this.grid[x][y] = portal;
                             break;
                         default:
-                            GumType type = GumType.values()[Character.getNumericValue(c)];
-                            this.grid[x][y] = new Lane(coords, this, type);
+                            int gumNumber = Character.getNumericValue(c);
+                            GumType type = GumType.values()[gumNumber];
+                            Lane lane = new Lane(coords, this, type);
+                            if (gumNumber != 0) {
+                                this.gumLanes.add(lane);
+                            }
+                            this.grid[x][y] = lane;
                             break;
                     }
                     x++;
@@ -202,6 +214,18 @@ public class Game extends Observable {
 
     public int getScore() {
         return this.score;
+    }
+
+    public ArrayList<Lane> getGumLanes() {
+        return this.gumLanes;
+    }
+
+    public void addGumLane(Lane lane) {
+        this.gumLanes.add(lane);
+    }
+
+    public void removeGumLane(Lane lane) {
+        this.gumLanes.remove(lane);
     }
 
     public void notifyPowerToGhosts() {
@@ -312,6 +336,13 @@ public class Game extends Observable {
                 }
                 this.applyMove(entity, nextCoords);
                 newLane.setEntity(entity);
+
+                if (this.gumLanes.isEmpty()) {
+                    this.kill(this.pacman);
+                    this.update();
+                    return false;
+                }
+
                 this.update();
 
                 return true;
