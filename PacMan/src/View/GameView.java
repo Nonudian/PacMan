@@ -35,6 +35,7 @@ import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -148,26 +149,37 @@ public class GameView extends Application {
 
         int rectHeight = this.game.getDimension() * 30 / 3;
 
-        // score part
-        StackPane scorePane = new StackPane();
-        Rectangle scoreRect = new Rectangle(rectHeight, 60);
+        // [SCORES]
+        VBox scoresBox = new VBox();
+        
+        Rectangle bestScoreRect = new Rectangle(rectHeight, 20);
+        Rectangle scoreRect = new Rectangle(rectHeight, 40);
+        Text bestScore = new Text(27, 27, "BEST: " + String.valueOf(this.game.getBestScore()));
         Text score = new Text(27, 27, String.valueOf(this.game.getScore()));
+        bestScore.setFill(Color.WHITE);
         score.setFill(Color.WHITE);
         try {
-            InputStream inputstream = new FileInputStream("./src/Assets/Fonts/emulogic.ttf");
-            score.setFont(Font.loadFont(inputstream, 18));
+            String fontFile = "./src/Assets/Fonts/emulogic.ttf";
+            InputStream fontBestScore = new FileInputStream(fontFile);
+            InputStream fontScore = new FileInputStream(fontFile);
+            
+            bestScore.setFont(Font.loadFont(fontBestScore, 9));
+            score.setFont(Font.loadFont(fontScore, 18));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GameView.class.getName()).log(Level.SEVERE, null, ex);
         }
-        scorePane.getChildren().addAll(scoreRect, score);
+        StackPane bestScorePane = new StackPane(bestScoreRect, bestScore);
+        bestScorePane.setAlignment(Pos.BOTTOM_CENTER);
+        StackPane scorePane = new StackPane(scoreRect, score);
+        scoresBox.getChildren().addAll(bestScorePane, scorePane);
 
-        // banner part
+        // [BANNER]
         StackPane bannerPane = new StackPane();
         ImageView imageView = new ImageView("/Assets/Images/Pac_Man_Logo.png");
         Rectangle bannerRect = new Rectangle(rectHeight, 60);
         bannerPane.getChildren().addAll(bannerRect, imageView);
 
-        // lives part
+        // [LIVES]
         StackPane livesPane = new StackPane();
         Rectangle livesRect = new Rectangle(rectHeight, 60);
         TilePane lives = new TilePane();
@@ -182,7 +194,7 @@ public class GameView extends Application {
         
 
         this.board.setMaxSize(this.game.getDimension() * 30, 60);
-        this.board.getChildren().addAll(scorePane, bannerPane, livesPane);
+        this.board.getChildren().addAll(scoresBox, bannerPane, livesPane);
     }
 
     private void display() {

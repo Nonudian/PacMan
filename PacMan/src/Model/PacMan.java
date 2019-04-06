@@ -35,12 +35,15 @@ public class PacMan extends Entity {
         this.game.resetGhosts();
         this.resetSick();
         if (this.game.getGumLanes().isEmpty()) {
-            // victory
+            // [VICTORY]
             this.game.resetGum();
             this.resetLives();
         } else if (this.currentLives == 0) {
-            // defeat
+            // [DEFEAT]
             this.game.resetGum();
+            if (this.game.getScore() > this.game.getBestScore()) {
+                this.game.updateBestScore();
+            }
             this.game.resetScore();
             this.resetLives();
         }
