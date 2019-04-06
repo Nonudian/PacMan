@@ -31,6 +31,7 @@ public class Game extends Observable {
     private boolean running;
     private int score;
     private int bestScore;
+    private int ghostScore;
     private int level;
     private ArrayList<Portal> portals;
     private PacMan pacman;
@@ -41,6 +42,7 @@ public class Game extends Observable {
         this.dimension = 21;
         this.score = 0;
         this.bestScore = this.score;
+        this.ghostScore = 200;
         this.level = 1;
         this.running = false;
         this.initGrid();
@@ -63,10 +65,15 @@ public class Game extends Observable {
         this.ghosts.forEach((ghost) -> {
             this.kill(ghost);
         });
+        this.resetGhostScore();
     }
 
     public void resetScore() {
         this.score = 0;
+    }
+    
+    public void resetGhostScore() {
+        this.ghostScore = 200;
     }
     
     public void resetLevel() {
@@ -228,16 +235,20 @@ public class Game extends Observable {
         return this.bestScore;
     }
     
+    public void updateBestScore() {
+        this.bestScore = this.score;
+    }
+    
+    public void updateGhostScore() {
+        this.ghostScore *= 2;
+    }
+    
     public void increaseLevel() {
         this.level++;
     }
     
     public int getLevel() {
         return this.level;
-    }
-    
-    public void updateBestScore() {
-        this.bestScore = this.score;
     }
 
     public ArrayList<Lane> getGumLanes() {
@@ -275,6 +286,11 @@ public class Game extends Observable {
         if (entity instanceof PacMan && ((PacMan) entity).isAlive()) {
             this.getPacMan().loseLife();
             ((PacMan) entity).setAlive(false);
+        }
+        
+        if (entity instanceof Ghost) {
+            this.addScore(this.ghostScore);
+            this.updateGhostScore();
         }
 
         ((Lane) this.getTileByCoords(entity.getCoords())).removeEntity();
@@ -368,11 +384,9 @@ public class Game extends Observable {
                 }
 
                 this.update();
-
                 return true;
             }
         }
-
         return false;
     }
 }

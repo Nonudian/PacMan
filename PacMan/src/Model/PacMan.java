@@ -71,6 +71,7 @@ public class PacMan extends Entity {
     }
 
     public void startPower() {
+        this.game.resetGhostScore();
         this.game.notifyPowerToGhosts();
         if (!this.isPowered()) {
             this.resetTurnBack();
