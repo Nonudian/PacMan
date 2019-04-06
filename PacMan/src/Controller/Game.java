@@ -31,6 +31,7 @@ public class Game extends Observable {
     private boolean running;
     private int score;
     private int bestScore;
+    private int level;
     private ArrayList<Portal> portals;
     private PacMan pacman;
     private GhostDoor ghostdoor;
@@ -40,6 +41,7 @@ public class Game extends Observable {
         this.dimension = 21;
         this.score = 0;
         this.bestScore = this.score;
+        this.level = 1;
         this.running = false;
         this.initGrid();
         this.linkPortals();
@@ -65,6 +67,10 @@ public class Game extends Observable {
 
     public void resetScore() {
         this.score = 0;
+    }
+    
+    public void resetLevel() {
+        this.level = 1;
     }
 
     public void start() {
@@ -218,12 +224,20 @@ public class Game extends Observable {
         return this.score;
     }
     
-    public void updateBestScore() {
-        this.bestScore += this.score;
-    }
-    
     public int getBestScore() {
         return this.bestScore;
+    }
+    
+    public void increaseLevel() {
+        this.level++;
+    }
+    
+    public int getLevel() {
+        return this.level;
+    }
+    
+    public void updateBestScore() {
+        this.bestScore = this.score;
     }
 
     public ArrayList<Lane> getGumLanes() {

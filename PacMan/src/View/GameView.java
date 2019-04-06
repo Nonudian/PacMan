@@ -180,8 +180,20 @@ public class GameView extends Application {
         bannerPane.getChildren().addAll(bannerRect, imageView);
 
         // [LIVES]
-        StackPane livesPane = new StackPane();
-        Rectangle livesRect = new Rectangle(rectHeight, 60);
+        VBox gameBox = new VBox();
+        
+        Rectangle levelRect = new Rectangle(rectHeight, 20);
+        Rectangle livesRect = new Rectangle(rectHeight, 40);
+        Text level = new Text(27, 27, "LVL: " + this.game.getLevel());
+        level.setFill(Color.WHITE);
+        try {
+            String fontFile = "./src/Assets/Fonts/emulogic.ttf";
+            InputStream fontLevel = new FileInputStream(fontFile);
+            level.setFont(Font.loadFont(fontLevel, 9));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GameView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         TilePane lives = new TilePane();
         for (int i = 0; i < this.game.getPacMan().getRemainingLives(); i++) {
             Arc pacmanLife = new Arc(0, 0, 10, 10, 45, 270);
@@ -190,11 +202,15 @@ public class GameView extends Application {
             lives.getChildren().add(pacmanLife);
         }
         lives.setAlignment(Pos.CENTER);
-        livesPane.getChildren().addAll(livesRect, lives);
+        
+        StackPane levelPane = new StackPane(levelRect, level);
+        levelPane.setAlignment(Pos.BOTTOM_CENTER);
+        StackPane livesPane = new StackPane(livesRect, lives);
+        gameBox.getChildren().addAll(levelPane, livesPane);
         
 
         this.board.setMaxSize(this.game.getDimension() * 30, 60);
-        this.board.getChildren().addAll(scoresBox, bannerPane, livesPane);
+        this.board.getChildren().addAll(scoresBox, bannerPane, gameBox);
     }
 
     private void display() {

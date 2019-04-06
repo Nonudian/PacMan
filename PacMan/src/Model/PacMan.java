@@ -37,6 +37,7 @@ public class PacMan extends Entity {
         if (this.game.getGumLanes().isEmpty()) {
             // [VICTORY]
             this.game.resetGum();
+            this.game.increaseLevel();
             this.resetLives();
         } else if (this.currentLives == 0) {
             // [DEFEAT]
@@ -45,6 +46,7 @@ public class PacMan extends Entity {
                 this.game.updateBestScore();
             }
             this.game.resetScore();
+            this.game.resetLevel();
             this.resetLives();
         }
         super.reset();
