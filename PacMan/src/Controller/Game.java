@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Board;
 import Model.Entity;
 import Model.Ghost;
 import Model.GhostDoor;
@@ -25,8 +26,6 @@ import static javafx.scene.paint.Color.*;
 
 public class Game extends Observable {
 
-    private final int dimension;
-    private Tile[][] grid;
     private ArrayList<Ghost> ghosts;
     private boolean running;
     private int score;
@@ -37,9 +36,9 @@ public class Game extends Observable {
     private PacMan pacman;
     private GhostDoor ghostdoor;
     private ArrayList<Lane> gumLanes;
+    private Board board;
 
     public Game() {
-        this.dimension = 21;
         this.score = 0;
         this.bestScore = this.score;
         this.ghostScore = 200;
@@ -51,9 +50,9 @@ public class Game extends Observable {
 
     public void resetGum() {
         this.gumLanes.clear();
-        for (int j = 0; j < this.dimension; j++) {
-            for (int i = 0; i < this.dimension; i++) {
-                Tile tile = this.grid[i][j];
+        for (int j = 0; j < this.getDimension(); j++) {
+            for (int i = 0; i < this.getDimension(); i++) {
+                Tile tile = this.board.getTile(i, j);
                 if (tile instanceof Lane) {
                     ((Lane) tile).resetGum();
                 }
@@ -63,7 +62,7 @@ public class Game extends Observable {
 
     public void resetGhosts() {
         this.ghosts.forEach((ghost) -> {
-            this.kill(ghost);
+            this.kill(ghost, true);
         });
         this.resetGhostScore();
     }
@@ -104,8 +103,8 @@ public class Game extends Observable {
     private void initGrid() {
         this.portals = new ArrayList();
         this.ghosts = new ArrayList();
-        this.grid = new Tile[this.dimension][this.dimension];
         this.gumLanes = new ArrayList();
+        this.board = new Board(21);
 
         Color[] ghostColors = new Color[]{RED, CYAN, PINK, ORANGE};
         int ghostAdded = 0;
@@ -119,32 +118,33 @@ public class Game extends Observable {
                 int x = 0;
                 for (char c : reader.nextLine().toCharArray()) {
                     Point2D coords = new Point2D(x, y);
+                    Tile tile;
                     switch (c) {
                         case 'X':
-                            this.grid[x][y] = new Wall(coords);
+                            tile = new Wall(coords);
                             break;
                         case 'P':
                             this.pacman = new PacMan(coords, RIGHT, Color.YELLOW, this, 300);
-                            this.grid[x][y] = new Lane(coords, this, this.pacman);
+                            tile = new Lane(coords, this, this.pacman);
                             break;
                         case 'D':
                             this.ghostdoor = new GhostDoor(coords, this, UP);
-                            this.grid[x][y] = this.ghostdoor;
+                            tile = this.ghostdoor;
                             break;
                         case 'S':
-                            this.grid[x][y] = new GhostLane(coords, this);
+                            tile = new GhostLane(coords, this);
                             break;
                         case 'G':
                             Color color = ghostColors[ghostAdded];
                             Ghost ghost = new Ghost(coords, UP, color, this, 300 + 50 * ghostAdded);
                             this.ghosts.add(ghost);
-                            this.grid[x][y] = new Lane(coords, this, ghost);
+                            tile = new Lane(coords, this, ghost);
                             ghostAdded++;
                             break;
                         case 'T':
                             Portal portal = new Portal(coords, this);
                             this.portals.add(portal);
-                            this.grid[x][y] = portal;
+                            tile = portal;
                             break;
                         default:
                             int gumNumber = Character.getNumericValue(c);
@@ -153,9 +153,10 @@ public class Game extends Observable {
                             if (gumNumber != 0) {
                                 this.gumLanes.add(lane);
                             }
-                            this.grid[x][y] = lane;
+                            tile = lane;
                             break;
                     }
+                    this.board.setTile(x, y, tile);
                     x++;
                 }
                 y++;
@@ -174,11 +175,11 @@ public class Game extends Observable {
     }
 
     public int getDimension() {
-        return this.dimension;
+        return this.board.getDimension();
     }
 
     public Tile[][] getTiles() {
-        return this.grid;
+        return this.board.getTiles();
     }
 
     public ArrayList<Ghost> getGhosts() {
@@ -213,14 +214,14 @@ public class Game extends Observable {
     }
 
     public Tile getTileByCoords(Point2D coords) {
-        return this.grid[(int) coords.getX()][(int) coords.getY()];
+        return this.board.getTileByCoords(coords);
     }
 
     public boolean isReachable(Point2D coords) {
         return (coords.getX() > -1)
-                && (coords.getX() < this.dimension)
+                && (coords.getX() < this.getDimension())
                 && (coords.getY() > -1)
-                && (coords.getY() < this.dimension);
+                && (coords.getY() < this.getDimension());
     }
 
     public void addScore(int score) {
@@ -282,13 +283,13 @@ public class Game extends Observable {
         entity.moveTo(newCoords);
     }
 
-    private void kill(Entity entity) {
+    private void kill(Entity entity, boolean gameReset) {
         if (entity instanceof PacMan && ((PacMan) entity).isAlive()) {
             this.getPacMan().loseLife();
             ((PacMan) entity).setAlive(false);
         }
         
-        if (entity instanceof Ghost) {
+        if (!gameReset && entity instanceof Ghost) {
             this.addScore(this.ghostScore);
             this.updateGhostScore();
         }
@@ -357,13 +358,13 @@ public class Game extends Observable {
 
                 if (enemy != null) {
                     if (entity.canKill(enemy)) {
-                        this.kill(enemy);
+                        this.kill(enemy, false);
                         if (entity instanceof Ghost) {
                             this.update();
                             return false;
                         }
                     } else if (enemy.canKill(entity)) {
-                        this.kill(entity);
+                        this.kill(entity, false);
                         this.update();
                         return false;
                     } else {
@@ -378,7 +379,7 @@ public class Game extends Observable {
                 newLane.setEntity(entity);
 
                 if (this.gumLanes.isEmpty()) {
-                    this.kill(this.pacman);
+                    this.kill(this.pacman, false);
                     this.update();
                     return false;
                 }
