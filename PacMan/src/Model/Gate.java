@@ -4,19 +4,19 @@ import Controller.Game;
 import static Util.GumType.EMPTY;
 import javafx.geometry.Point2D;
 
-public class Portal extends Lane {
+public class Gate extends Lane {
     
-    private Portal target;
+    private Gate target;
     
-    public Portal(Point2D coords, Game game) {
+    public Gate(Point2D coords, Game game) {
         super(coords, game, EMPTY);
     }
     
-    public void setTarget(Portal target) {
+    public void setTarget(Gate target) {
         this.target = target;
     }
     
-    public Portal getTarget() {
+    public Gate getTarget() {
         return this.target;
     }
     

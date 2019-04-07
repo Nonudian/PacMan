@@ -17,10 +17,10 @@ public class PacMan extends Entity {
     private final Timeline powerTimeline;
     private final int defaultLives;
     private int currentLives;
-    private AtomicBoolean alive;
+    private final AtomicBoolean alive;
 
-    public PacMan(Point2D coords, Direction direction, Color color, Game game, int interval) {
-        super(coords, direction, color, game, interval);
+    public PacMan(Point2D coords, Direction direction, Game game, int interval) {
+        super(coords, direction, Color.YELLOW, game, interval);
         this.powered = false;
         this.defaultLives = 3;
         this.currentLives = this.defaultLives;

@@ -1,13 +1,17 @@
 package Controller;
 
+import Model.Blinky;
 import Model.Board;
+import Model.Clyde;
 import Model.Entity;
 import Model.Ghost;
 import Model.GhostDoor;
 import Model.GhostLane;
+import Model.Inky;
 import Model.Lane;
 import Model.PacMan;
-import Model.Portal;
+import Model.Pinky;
+import Model.Gate;
 import Model.Tile;
 import Model.Wall;
 import Util.GumType;
@@ -21,8 +25,6 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
-import static javafx.scene.paint.Color.*;
 
 public class Game extends Observable {
 
@@ -32,7 +34,7 @@ public class Game extends Observable {
     private int bestScore;
     private int ghostScore;
     private int level;
-    private ArrayList<Portal> portals;
+    private ArrayList<Gate> portals;
     private PacMan pacman;
     private GhostDoor ghostdoor;
     private ArrayList<Lane> gumLanes;
@@ -70,11 +72,11 @@ public class Game extends Observable {
     public void resetScore() {
         this.score = 0;
     }
-    
+
     public void resetGhostScore() {
         this.ghostScore = 200;
     }
-    
+
     public void resetLevel() {
         this.level = 1;
     }
@@ -106,9 +108,6 @@ public class Game extends Observable {
         this.gumLanes = new ArrayList();
         this.board = new Board(21);
 
-        Color[] ghostColors = new Color[]{RED, CYAN, PINK, ORANGE};
-        int ghostAdded = 0;
-
         File file = new File("./src/Assets/gridFile.txt");
         Scanner reader;
         try {
@@ -120,11 +119,31 @@ public class Game extends Observable {
                     Point2D coords = new Point2D(x, y);
                     Tile tile;
                     switch (c) {
+                        case 'B':
+                            Ghost blinky = new Blinky(coords, UP, this, 450);
+                            this.ghosts.add(blinky);
+                            tile = new Lane(coords, this, blinky);
+                            break;
+                        case 'P':
+                            Ghost pinky = new Pinky(coords, UP, this, 300);
+                            this.ghosts.add(pinky);
+                            tile = new Lane(coords, this, pinky);
+                            break;
+                        case 'I':
+                            Ghost inky = new Inky(coords, UP, this, 500);
+                            this.ghosts.add(inky);
+                            tile = new Lane(coords, this, inky);
+                            break;
+                        case 'C':
+                            Ghost clyde = new Clyde(coords, UP, this, 550);
+                            this.ghosts.add(clyde);
+                            tile = new Lane(coords, this, clyde);
+                            break;
                         case 'X':
                             tile = new Wall(coords);
                             break;
-                        case 'P':
-                            this.pacman = new PacMan(coords, RIGHT, Color.YELLOW, this, 300);
+                        case 'M':
+                            this.pacman = new PacMan(coords, RIGHT, this, 300);
                             tile = new Lane(coords, this, this.pacman);
                             break;
                         case 'D':
@@ -135,16 +154,9 @@ public class Game extends Observable {
                             tile = new GhostLane(coords, this);
                             break;
                         case 'G':
-                            Color color = ghostColors[ghostAdded];
-                            Ghost ghost = new Ghost(coords, UP, color, this, 300 + 50 * ghostAdded);
-                            this.ghosts.add(ghost);
-                            tile = new Lane(coords, this, ghost);
-                            ghostAdded++;
-                            break;
-                        case 'T':
-                            Portal portal = new Portal(coords, this);
-                            this.portals.add(portal);
-                            tile = portal;
+                            Gate gate = new Gate(coords, this);
+                            this.portals.add(gate);
+                            tile = gate;
                             break;
                         default:
                             int gumNumber = Character.getNumericValue(c);
@@ -231,23 +243,23 @@ public class Game extends Observable {
     public int getScore() {
         return this.score;
     }
-    
+
     public int getBestScore() {
         return this.bestScore;
     }
-    
+
     public void updateBestScore() {
         this.bestScore = this.score;
     }
-    
+
     public void updateGhostScore() {
         this.ghostScore *= 2;
     }
-    
+
     public void increaseLevel() {
         this.level++;
     }
-    
+
     public int getLevel() {
         return this.level;
     }
@@ -288,7 +300,7 @@ public class Game extends Observable {
             this.getPacMan().loseLife();
             ((PacMan) entity).setAlive(false);
         }
-        
+
         if (!gameReset && entity instanceof Ghost) {
             this.addScore(this.ghostScore);
             this.updateGhostScore();
@@ -351,8 +363,8 @@ public class Game extends Observable {
                 Lane newLane = ((Lane) newTile);
                 Entity enemy = newLane.getEntity();
 
-                if (newLane instanceof Portal) {
-                    newLane = ((Portal) newLane).getTarget();
+                if (newLane instanceof Gate) {
+                    newLane = ((Gate) newLane).getTarget();
                     nextCoords = newLane.getCoords();
                 }
 

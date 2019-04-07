@@ -7,7 +7,7 @@ import java.util.Random;
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
-public class Ghost extends Entity {
+public abstract class Ghost extends Entity {
 
     private boolean outside;
     private boolean scared;

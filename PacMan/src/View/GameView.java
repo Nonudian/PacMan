@@ -11,7 +11,7 @@ import static Util.GumType.*;
 import Model.Tile;
 import Model.Lane;
 import Model.PacMan;
-import Model.Portal;
+import Model.Gate;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -72,7 +72,7 @@ public class GameView extends Application {
                 Rectangle rect = new Rectangle(30, 30);
                 pane.getChildren().add(rect);
                 if (tile instanceof Lane) {
-                    if (tile instanceof Portal) {
+                    if (tile instanceof Gate) {
                         rect.setFill(Color.WHITE);
                     } else if (tile instanceof GhostLane) {
                         if (tile instanceof GhostDoor) {
