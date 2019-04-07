@@ -100,6 +100,11 @@ public abstract class Ghost extends Entity {
 
     @Override
     public Direction getNextDirection() {
+        if(this.turnBack) {
+            this.resetTurnBack();
+            return this.currentDirection.getOpposed();
+        }
+        
         Point2D aimedCoords;
         if (this.isOutside()) {
             aimedCoords = this.game.getPacMan().getCoords();

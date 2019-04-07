@@ -35,10 +35,14 @@ public class Game extends Observable {
     private int ghostScore;
     private int level;
     private ArrayList<Gate> portals;
-    private PacMan pacman;
     private GhostDoor ghostdoor;
     private ArrayList<Lane> gumLanes;
     private Board board;
+    private PacMan pacman;
+    private Blinky blinky;
+    private Pinky pinky;
+    private Inky inky;
+    private Clyde clyde;
 
     public Game() {
         this.score = 0;
@@ -64,7 +68,9 @@ public class Game extends Observable {
 
     public void resetGhosts() {
         this.ghosts.forEach((ghost) -> {
-            this.kill(ghost, true);
+            if (ghost.isRunning()) {
+                this.kill(ghost, true);
+            }
         });
         this.resetGhostScore();
     }
@@ -83,16 +89,16 @@ public class Game extends Observable {
 
     public void start() {
         this.running = true;
-        this.ghosts.forEach((ghost) -> {
-            ghost.start();
-        });
+        this.blinky.start();
         this.pacman.start();
     }
 
     public void stop() {
         this.running = false;
         this.ghosts.forEach((ghost) -> {
-            ghost.stop();
+            if (ghost.isRunning()) {
+                ghost.stop();
+            }
         });
         this.pacman.stop();
     }
@@ -120,31 +126,31 @@ public class Game extends Observable {
                     Tile tile;
                     switch (c) {
                         case 'B':
-                            Ghost blinky = new Blinky(coords, UP, this, 450);
-                            this.ghosts.add(blinky);
-                            tile = new Lane(coords, this, blinky);
+                            this.blinky = new Blinky(coords, UP, this, 450);
+                            this.ghosts.add(this.blinky);
+                            tile = new Lane(coords, this, this.blinky);
                             break;
                         case 'P':
-                            Ghost pinky = new Pinky(coords, UP, this, 300);
-                            this.ghosts.add(pinky);
-                            tile = new Lane(coords, this, pinky);
+                            this.pinky = new Pinky(coords, UP, this, 300);
+                            this.ghosts.add(this.pinky);
+                            tile = new Lane(coords, this, this.pinky);
                             break;
                         case 'I':
-                            Ghost inky = new Inky(coords, UP, this, 500);
-                            this.ghosts.add(inky);
-                            tile = new Lane(coords, this, inky);
+                            this.inky = new Inky(coords, UP, this, 500);
+                            this.ghosts.add(this.inky);
+                            tile = new Lane(coords, this, this.inky);
                             break;
                         case 'C':
-                            Ghost clyde = new Clyde(coords, UP, this, 550);
-                            this.ghosts.add(clyde);
-                            tile = new Lane(coords, this, clyde);
-                            break;
-                        case 'X':
-                            tile = new Wall(coords);
+                            this.clyde = new Clyde(coords, UP, this, 550);
+                            this.ghosts.add(this.clyde);
+                            tile = new Lane(coords, this, this.clyde);
                             break;
                         case 'M':
                             this.pacman = new PacMan(coords, RIGHT, this, 300);
                             tile = new Lane(coords, this, this.pacman);
+                            break;
+                        case 'X':
+                            tile = new Wall(coords);
                             break;
                         case 'D':
                             this.ghostdoor = new GhostDoor(coords, this, UP);
@@ -194,10 +200,6 @@ public class Game extends Observable {
         return this.board.getTiles();
     }
 
-    public ArrayList<Ghost> getGhosts() {
-        return this.ghosts;
-    }
-
     public PacMan getPacMan() {
         return this.pacman;
     }
@@ -238,6 +240,13 @@ public class Game extends Observable {
 
     public void addScore(int score) {
         this.score += score;
+        if(this.score > 2000 && !this.pinky.isRunning()) {
+            this.pinky.start();
+        } else if(this.score > 4000 && !this.inky.isRunning()) {
+            this.inky.start();
+        } else if(this.score > 6000 && !this.clyde.isRunning()) {
+            this.clyde.start();
+        }
     }
 
     public int getScore() {
@@ -278,15 +287,19 @@ public class Game extends Observable {
 
     public void notifyPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            ghost.scare();
-            ghost.setInterval(ghost.getDefaultInterval() * 2);
+            if (ghost.isRunning()) {
+                ghost.scare();
+                ghost.setInterval(ghost.getDefaultInterval() * 2);
+            }
         });
     }
 
     public void notifyEndPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            ghost.resetScared();
-            ghost.resetInterval();
+            if (ghost.isRunning()) {
+                ghost.resetScared();
+                ghost.resetInterval();
+            }
         });
     }
 

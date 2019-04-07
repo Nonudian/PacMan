@@ -147,12 +147,7 @@ public abstract class Entity implements Runnable {
         while (this.runnable.get()) {
             try {
                 this.worker.sleep(this.interval);
-                if (this.turnBack && this instanceof Ghost) {
-                    this.game.move(this, this.currentDirection.getOpposed());
-                    this.resetTurnBack();
-                } else {
-                    this.game.move(this, this.getNextDirection());
-                }
+                this.game.move(this, this.getNextDirection());
             } catch (InterruptedException ex) {
                 System.out.println("Interrupted thread");
             }

@@ -89,7 +89,7 @@ public class GameView extends Application {
                         Circle gum = new Circle(15, 15, 5, Color.WHITE);
                         switch (type) {
                             case INVERTED:
-                                gum.setFill(Color.RED);
+                                gum.setFill(Color.GREENYELLOW);
                             case SUPER:
                                 gum.setRadius(10);
                                 break;
