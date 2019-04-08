@@ -34,6 +34,7 @@ public class PacMan extends Entity {
     public void reset() {
         this.game.resetGhosts();
         this.resetSick();
+        this.game.updateOldScore();
         if (this.game.getGumLanes().isEmpty()) {
             // [VICTORY]
             this.game.resetGum();
@@ -50,6 +51,12 @@ public class PacMan extends Entity {
             this.resetLives();
         }
         super.reset();
+    }
+    
+    @Override
+    public void start() {
+        this.setMoving(true);
+        super.start();
     }
 
     public boolean isPowered() {

@@ -31,6 +31,7 @@ public class Game extends Observable {
     private ArrayList<Ghost> ghosts;
     private boolean running;
     private int score;
+    private int oldScore;
     private int bestScore;
     private int ghostScore;
     private int level;
@@ -46,6 +47,7 @@ public class Game extends Observable {
 
     public Game() {
         this.score = 0;
+        this.oldScore = 0;
         this.bestScore = this.score;
         this.ghostScore = 200;
         this.level = 1;
@@ -68,15 +70,15 @@ public class Game extends Observable {
 
     public void resetGhosts() {
         this.ghosts.forEach((ghost) -> {
-            if (ghost.isRunning()) {
-                this.kill(ghost, true);
-            }
+            ghost.setMoving(false);
+            this.kill(ghost, true);
         });
         this.resetGhostScore();
     }
 
     public void resetScore() {
         this.score = 0;
+        this.oldScore = 0;
     }
 
     public void resetGhostScore() {
@@ -90,15 +92,16 @@ public class Game extends Observable {
     public void start() {
         this.running = true;
         this.blinky.start();
+        this.pinky.start();
+        this.inky.start();
+        this.clyde.start();
         this.pacman.start();
     }
 
     public void stop() {
         this.running = false;
         this.ghosts.forEach((ghost) -> {
-            if (ghost.isRunning()) {
-                ghost.stop();
-            }
+            ghost.stop();
         });
         this.pacman.stop();
     }
@@ -240,12 +243,15 @@ public class Game extends Observable {
 
     public void addScore(int score) {
         this.score += score;
-        if(this.score > 2000 && !this.pinky.isRunning()) {
-            this.pinky.start();
-        } else if(this.score > 4000 && !this.inky.isRunning()) {
-            this.inky.start();
-        } else if(this.score > 6000 && !this.clyde.isRunning()) {
-            this.clyde.start();
+        System.out.println(this.score + "-" + (this.oldScore + 2000) + "-" + this.bestScore);
+        if (this.score > this.oldScore && !this.blinky.canMove()) {
+            this.blinky.setMoving(true);
+        } else if (this.score > (this.oldScore + 2000) && !this.pinky.canMove()) {
+            this.pinky.setMoving(true);
+        } else if (this.score > (this.oldScore + 4000) && !this.inky.canMove()) {
+            this.inky.setMoving(true);
+        } else if (this.score > (this.oldScore + 6000) && !this.clyde.canMove()) {
+            this.clyde.setMoving(true);
         }
     }
 
@@ -259,6 +265,10 @@ public class Game extends Observable {
 
     public void updateBestScore() {
         this.bestScore = this.score;
+    }
+
+    public void updateOldScore() {
+        this.oldScore = this.score;
     }
 
     public void updateGhostScore() {
@@ -287,7 +297,7 @@ public class Game extends Observable {
 
     public void notifyPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            if (ghost.isRunning()) {
+            if (ghost.canMove()) {
                 ghost.scare();
                 ghost.setInterval(ghost.getDefaultInterval() * 2);
             }
@@ -296,7 +306,7 @@ public class Game extends Observable {
 
     public void notifyEndPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            if (ghost.isRunning()) {
+            if (ghost.canMove()) {
                 ghost.resetScared();
                 ghost.resetInterval();
             }

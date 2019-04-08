@@ -25,6 +25,7 @@ public abstract class Entity implements Runnable {
     
     protected final Game game;
     protected boolean turnBack;
+    protected boolean moving;
 
     public Entity(Point2D coords, Direction direction, Color color, Game game, int interval) {
         this.currentDirection = direction;
@@ -37,6 +38,7 @@ public abstract class Entity implements Runnable {
         this.interval = interval;
         this.oldInterval = interval;
         this.turnBack = false;
+        this.moving = false;
 
         this.runnable = new AtomicBoolean(false);
         this.worker = new Thread(this);
@@ -55,7 +57,9 @@ public abstract class Entity implements Runnable {
     }
 
     public void stop() {
+        this.setMoving(false);
         this.runnable.set(false);
+        this.worker.interrupt();
     }
 
     public boolean isRunning() {
@@ -96,6 +100,14 @@ public abstract class Entity implements Runnable {
 
     public void moveToStartingCoords() {
         this.coords = this.startingCoords;
+    }
+    
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+    
+    public boolean canMove() {
+        return this.moving;
     }
 
     public void setTurnBack(boolean turnBack) {
@@ -147,7 +159,12 @@ public abstract class Entity implements Runnable {
         while (this.runnable.get()) {
             try {
                 this.worker.sleep(this.interval);
-                this.game.move(this, this.getNextDirection());
+                if(this.canMove()) {
+                    if(this instanceof Ghost) {
+                        System.out.println("canmove");
+                    }
+                    this.game.move(this, this.getNextDirection());
+                }
             } catch (InterruptedException ex) {
                 System.out.println("Interrupted thread");
             }
