@@ -1,6 +1,7 @@
 
 package Model;
 
+import Model.Tile.Tile;
 import javafx.geometry.Point2D;
 
 public class Board {

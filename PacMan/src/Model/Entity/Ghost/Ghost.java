@@ -1,6 +1,11 @@
-package Model;
+package Model.Entity.Ghost;
 
 import Controller.Game;
+import Model.Entity.Entity;
+import Model.Entity.PacMan;
+import Model.Tile.GhostDoor;
+import Model.Tile.Lane;
+import Model.Tile.Tile;
 import Util.Direction;
 import java.util.ArrayList;
 import java.util.Random;

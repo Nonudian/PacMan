@@ -1,17 +1,11 @@
 package View;
 
-import Util.Direction;
-import Model.Entity;
+import Util.*;
+import Model.Entity.*;
 import Controller.Game;
-import Model.Ghost;
-import Model.GhostDoor;
-import Model.GhostLane;
-import Util.GumType;
+import Model.Entity.Ghost.Ghost;
+import Model.Tile.*;
 import static Util.GumType.*;
-import Model.Tile;
-import Model.Lane;
-import Model.PacMan;
-import Model.Gate;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;

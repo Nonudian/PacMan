@@ -1,5 +1,7 @@
-package Model;
+package Model.Tile;
 
+import Model.Entity.*;
+import Model.Entity.Ghost.Ghost;
 import Controller.Game;
 import Util.GumType;
 import static Util.GumType.*;

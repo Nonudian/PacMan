@@ -1,5 +1,6 @@
-package Model;
+package Model.Entity;
 
+import Model.Entity.Ghost.Ghost;
 import Controller.Game;
 import Util.Direction;
 import java.util.concurrent.atomic.AtomicBoolean;

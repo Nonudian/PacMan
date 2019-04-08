@@ -1,21 +1,10 @@
 package Controller;
 
-import Model.Blinky;
+import Model.Entity.Ghost.*;
 import Model.Board;
-import Model.Clyde;
-import Model.Entity;
-import Model.Ghost;
-import Model.GhostDoor;
-import Model.GhostLane;
-import Model.Inky;
-import Model.Lane;
-import Model.PacMan;
-import Model.Pinky;
-import Model.Gate;
-import Model.Tile;
-import Model.Wall;
-import Util.GumType;
-import Util.Direction;
+import Model.Entity.*;
+import Model.Tile.*;
+import Util.*;
 import static Util.Direction.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +81,7 @@ public class Game extends Observable {
     public void start() {
         this.running = true;
         this.blinky.start();
+        this.blinky.setMoving(true);
         this.pinky.start();
         this.inky.start();
         this.clyde.start();
@@ -243,14 +233,13 @@ public class Game extends Observable {
 
     public void addScore(int score) {
         this.score += score;
-        System.out.println(this.score + "-" + (this.oldScore + 2000) + "-" + this.bestScore);
-        if (this.score > this.oldScore && !this.blinky.canMove()) {
-            this.blinky.setMoving(true);
-        } else if (this.score > (this.oldScore + 2000) && !this.pinky.canMove()) {
+        int pointsGap = 1000;
+        System.out.println(this.score + "-" + (this.oldScore + pointsGap) + "-" + this.bestScore);
+        if (this.score > (this.oldScore + pointsGap) && !this.pinky.canMove()) {
             this.pinky.setMoving(true);
-        } else if (this.score > (this.oldScore + 4000) && !this.inky.canMove()) {
+        } else if (this.score > (this.oldScore + pointsGap * 2) && !this.inky.canMove()) {
             this.inky.setMoving(true);
-        } else if (this.score > (this.oldScore + 6000) && !this.clyde.canMove()) {
+        } else if (this.score > (this.oldScore + pointsGap * 3) && !this.clyde.canMove()) {
             this.clyde.setMoving(true);
         }
     }
@@ -354,6 +343,9 @@ public class Game extends Observable {
             ((PacMan) entity).setAlive(true);
         }
         entity.reset();
+        if (entity instanceof Blinky) {
+            this.blinky.setMoving(true);
+        }
         ((Lane) this.getTileByCoords(entity.getCoords())).setEntity(entity);
     }
 

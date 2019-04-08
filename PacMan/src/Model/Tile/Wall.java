@@ -1,4 +1,4 @@
-package Model;
+package Model.Tile;
 
 import javafx.geometry.Point2D;
 

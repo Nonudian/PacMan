@@ -1,4 +1,4 @@
-package Model;
+package Model.Tile;
 
 import Controller.Game;
 import Util.Direction;
