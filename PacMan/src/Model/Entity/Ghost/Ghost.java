@@ -33,6 +33,7 @@ public abstract class Ghost extends Entity {
     public void scare() {
         this.setTurnBack(true);
         this.setColor(Color.DARKORCHID);
+        this.setInterval(this.getDefaultInterval() * 2);
         this.scared = true;
     }
     
@@ -43,6 +44,7 @@ public abstract class Ghost extends Entity {
     public void resetScared() {
         this.scared = false;
         this.resetColor();
+        this.resetInterval();
     }
 
     public boolean isOutside() {

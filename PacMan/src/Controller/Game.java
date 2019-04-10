@@ -286,18 +286,16 @@ public class Game extends Observable {
 
     public void notifyPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            if (ghost.canMove()) {
+            if (!ghost.isScared()) {
                 ghost.scare();
-                ghost.setInterval(ghost.getDefaultInterval() * 2);
             }
         });
     }
 
     public void notifyEndPowerToGhosts() {
         this.ghosts.forEach((ghost) -> {
-            if (ghost.canMove()) {
+            if (ghost.isScared()) {
                 ghost.resetScared();
-                ghost.resetInterval();
             }
         });
     }
