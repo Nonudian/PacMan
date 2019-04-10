@@ -80,11 +80,10 @@ public class Game extends Observable {
 
     public void start() {
         this.running = true;
-        this.blinky.start();
+        this.ghosts.forEach((ghost) -> {
+            ghost.start();
+        });
         this.blinky.setMoving(true);
-        this.pinky.start();
-        this.inky.start();
-        this.clyde.start();
         this.pacman.start();
     }
 
@@ -234,7 +233,6 @@ public class Game extends Observable {
     public void addScore(int score) {
         this.score += score;
         int pointsGap = 1000;
-        System.out.println(this.score + "-" + (this.oldScore + pointsGap) + "-" + this.bestScore);
         if (this.score > (this.oldScore + pointsGap) && !this.pinky.canMove()) {
             this.pinky.setMoving(true);
         } else if (this.score > (this.oldScore + pointsGap * 2) && !this.inky.canMove()) {

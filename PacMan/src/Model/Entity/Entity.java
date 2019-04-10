@@ -161,9 +161,6 @@ public abstract class Entity implements Runnable {
             try {
                 this.worker.sleep(this.interval);
                 if(this.canMove()) {
-                    if(this instanceof Ghost) {
-                        System.out.println("canmove");
-                    }
                     this.game.move(this, this.getNextDirection());
                 }
             } catch (InterruptedException ex) {
