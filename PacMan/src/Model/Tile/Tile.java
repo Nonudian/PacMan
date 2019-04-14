@@ -2,7 +2,7 @@ package Model.Tile;
 
 import javafx.geometry.Point2D;
 
-public class Tile {
+public abstract class Tile {
     
     protected final Point2D coords;
     
